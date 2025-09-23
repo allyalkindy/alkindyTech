@@ -80,14 +80,14 @@ export function ContactSection() {
   const socialLinks = [
     {
       name: "GitHub",
-      url: "https://github.com/allysaid",
+      url: "https://github.com/allyalkindy",
       icon: Github,
       description: "View my code and projects",
       color: "text-gray-400 hover:text-white"
     },
     {
       name: "LinkedIn",
-      url: "https://linkedin.com/in/allysaid",
+      url: "https://www.linkedin.com/in/ally-mohammed-96a31a319",
       icon: Linkedin,
       description: "Professional network and experience",
       color: "text-blue-400 hover:text-blue-300"
