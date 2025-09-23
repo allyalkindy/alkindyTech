@@ -105,10 +105,6 @@ The site is optimized for deployment on Vercel:
 2. Connect your repository to Vercel
 3. Deploy with zero configuration
 
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
 ## 👨‍💻 Author
 
 **Ally M. Said**
