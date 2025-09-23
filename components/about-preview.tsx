@@ -103,17 +103,14 @@ export function AboutPreview() {
               <motion.div variants={itemVariants}>
                 <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm mb-8">
                   <CardContent className="p-8 sm:p-10">
-                    <div className="flex items-start space-x-6">
-                      <Avatar className="w-20 h-20 border-4 border-blue-500/30 flex-shrink-0">
-                        <AvatarImage src="/assets/Ally.M.Said.jpeg" alt="Ally M. Said" />
-                        <AvatarFallback>AMS</AvatarFallback>
-                      </Avatar>
+                  <div className="flex flex-col items-center  space-y-6">
+                 
                       <div className="flex-1">
                         <h3 className="text-2xl sm:text-3xl font-bold mb-3">
                           <span className="gradient-text-primary">Ally M. Said</span>
                         </h3>
-                        <div className="flex items-center space-x-4 text-gray-400 mb-4">
-                          <div className="flex items-center space-x-2">
+                        <div className="flex flex-col sm:flex-row sm:justify-center sm:space-x-4 text-gray-400 mb-4">
+                        <div className="flex items-center space-x-2">
                             <MapPin className="w-4 h-4" />
                             <span className="text-sm">Dar es Salaam, Tanzania</span>
                           </div>
