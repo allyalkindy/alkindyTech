@@ -19,6 +19,17 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  icons: {
+    icon: [
+      { url: '/assets/alkindy.jpeg', sizes: 'any' },
+      { url: '/assets/alkindy.jpeg', sizes: '32x32', type: 'image/jpeg' },
+      { url: '/assets/alkindy.jpeg', sizes: '16x16', type: 'image/jpeg' },
+    ],
+    shortcut: '/assets/alkindy.jpeg',
+    apple: [
+      { url: '/assets/alkindy.jpeg', sizes: '180x180', type: 'image/jpeg' },
+    ],
+  },
   openGraph: {
     title: 'alkindyTech - Crafting Modern Websites That Inspire',
     description: 'Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies.',
