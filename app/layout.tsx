@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
+import { GoogleAnalytics } from '@next/third-parties/google'
+
 
 export const metadata: Metadata = {
   title: 'alkindyTech - Crafting Modern Websites That Inspire',
@@ -79,6 +81,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <GoogleAnalytics gaId="G-PZE529NJB8" />
+
           <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>
