@@ -21,13 +21,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/assets/alkindy.jpeg', sizes: 'any' },
-      { url: '/assets/alkindy.jpeg', sizes: '32x32', type: 'image/jpeg' },
-      { url: '/assets/alkindy.jpeg', sizes: '16x16', type: 'image/jpeg' },
+      { url: '/assets/alkindy.png', sizes: '32x32', type: 'image/png' },
+      { url: '/assets/alkindy.png', sizes: '16x16', type: 'image/png' },
+      { url: '/assets/alkindy.png', sizes: '48x48', type: 'image/png' }, 
     ],
-    shortcut: '/assets/alkindy.jpeg',
     apple: [
-      { url: '/assets/alkindy.jpeg', sizes: '180x180', type: 'image/jpeg' },
+      { url: '/assets/alkindy.png', sizes: '180x180', type: 'image/png' },
     ],
   },
   openGraph: {
