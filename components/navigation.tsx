@@ -8,11 +8,12 @@ import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { name: 'About', href: '#about' },
-  { name: 'Experience', href: '#experience' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Skills', href: '#skills' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'About', href: '/#about' },
+  { name: 'Experience', href: '/#experience' },
+  { name: 'Projects', href: '/#projects' },
+  { name: 'Skills', href: '/#skills' },
+  { name: 'Saver', href: '/saver' },
+  { name: 'Contact', href: '/#contact' },
 ]
 
 export function Navigation() {
