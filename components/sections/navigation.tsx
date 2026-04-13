@@ -1,52 +1,52 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Sun, Moon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { useTheme } from 'next-themes'
-import { cn } from '@/lib/utils'
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, Sun, Moon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { name: 'About', href: '/#about' },
-  { name: 'Experience', href: '/#experience' },
-  { name: 'Projects', href: '/#projects' },
-  { name: 'Skills', href: '/#skills' },
-  { name: 'Saver', href: '/saver' },
-  { name: 'Contact', href: '/#contact' },
-]
+  { name: "About", href: "/#about" },
+  { name: "Experience", href: "/#experience" },
+  { name: "Projects", href: "/#projects" },
+  { name: "Skills", href: "/#skills" },
+  { name: "Tools", href: "/tools" },
+  { name: "Contact", href: "/#contact" },
+];
 
 export function Navigation() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleNavigation = (href: string) => {
-    if (href.startsWith('/')) {
+    if (href.startsWith("/")) {
       // External link - navigate to page
-      window.location.href = href
+      window.location.href = href;
     } else {
       // Internal link - scroll to section
-      const element = document.querySelector(href) as HTMLElement
+      const element = document.querySelector(href) as HTMLElement;
       if (element) {
         // Add offset for fixed navigation
-        const offsetTop = element.offsetTop - 80
+        const offsetTop = element.offsetTop - 80;
         window.scrollTo({
           top: offsetTop,
-          behavior: 'smooth'
-        })
+          behavior: "smooth",
+        });
       }
     }
-    setIsOpen(false)
-  }
+    setIsOpen(false);
+  };
 
   return (
     <motion.nav
@@ -56,7 +56,7 @@ export function Navigation() {
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled
           ? "bg-slate-900/95 backdrop-blur-md border-b border-blue-500/20"
-          : "bg-transparent"
+          : "bg-transparent",
       )}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -98,7 +98,7 @@ export function Navigation() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="hidden sm:flex"
               disabled={true}
             >
@@ -113,7 +113,11 @@ export function Navigation() {
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden"
             >
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>
@@ -124,7 +128,7 @@ export function Navigation() {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-slate-900/95 backdrop-blur-md border-b border-blue-500/20"
           >
@@ -142,7 +146,7 @@ export function Navigation() {
               <div className="pt-4 border-t border-blue-500/20">
                 <Button
                   variant="ghost"
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                   className="w-full justify-start text-white hover:text-white hover:bg-white/10"
                   disabled={true}
                 >
@@ -156,5 +160,5 @@ export function Navigation() {
         )}
       </AnimatePresence>
     </motion.nav>
-  )
+  );
 }

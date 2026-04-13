@@ -1,57 +1,68 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from 'sonner'
-import { GoogleAnalytics } from '@next/third-parties/google'
-
+import type { Metadata } from "next";
+import "./globals.css";
+import { Toaster } from "sonner";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { ThemeProvider } from "@/components/sections/theme-provider";
 
 export const metadata: Metadata = {
-  title: 'alkindyTech - Crafting Modern Websites That Inspire',
-  description: 'Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies. Building exceptional digital experiences for businesses and organizations.',
-  keywords: ['web developer', 'frontend developer', 'React', 'Next.js', 'TypeScript', 'freelance', 'web design', 'Tanzania'],
-  authors: [{ name: 'Ally M. Said', url: 'https://alkindytech.com' }],
-  creator: 'Ally M. Said',
-  publisher: 'alkindyTech',
+  title: "alkindyTech - Crafting Modern Websites That Inspire",
+  description:
+    "Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies. Building exceptional digital experiences for businesses and organizations.",
+  keywords: [
+    "web developer",
+    "frontend developer",
+    "React",
+    "Next.js",
+    "TypeScript",
+    "freelance",
+    "web design",
+    "Tanzania",
+  ],
+  authors: [{ name: "Ally M. Said", url: "https://alkindytech.com" }],
+  creator: "Ally M. Said",
+  publisher: "alkindyTech",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://alkindytech.com'),
+  metadataBase: new URL("https://alkindytech.com"),
   alternates: {
-    canonical: '/',
+    canonical: "/",
   },
   icons: {
     icon: [
-      { url: '/assets/alkindy.png', sizes: '32x32', type: 'image/png' },
-      { url: '/assets/alkindy.png', sizes: '16x16', type: 'image/png' },
-      { url: '/assets/alkindy.png', sizes: '48x48', type: 'image/png' }, 
+      { url: "/assets/alkindy.png", sizes: "32x32", type: "image/png" },
+      { url: "/assets/alkindy.png", sizes: "16x16", type: "image/png" },
+      { url: "/assets/alkindy.png", sizes: "48x48", type: "image/png" },
     ],
     apple: [
-      { url: '/assets/alkindy.png', sizes: '180x180', type: 'image/png' },
+      { url: "/assets/alkindy.png", sizes: "180x180", type: "image/png" },
     ],
   },
   openGraph: {
-    title: 'alkindyTech - Crafting Modern Websites That Inspire',
-    description: 'Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies.',
-    url: 'https://alkindytech.com',
-    siteName: 'alkindyTech',
+    title: "alkindyTech - Crafting Modern Websites That Inspire",
+    description:
+      "Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies.",
+    url: "https://alkindytech.com",
+    siteName: "alkindyTech",
     images: [
       {
-        url: '/og-image.jpg',
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: 'alkindyTech - Professional Web Developer',
+        alt: "alkindyTech - Professional Web Developer",
       },
     ],
-    locale: 'en_US',
-    type: 'website',
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'alkindyTech - Crafting Modern Websites That Inspire',
-    description: 'Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies.',
-    images: ['/og-image.jpg'],
+    card: "summary_large_image",
+    title: "alkindyTech - Crafting Modern Websites That Inspire",
+    description:
+      "Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies.",
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -59,33 +70,33 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
           {children}
-          <GoogleAnalytics gaId="G-PZE529NJB8" />
-
-          <Toaster position="top-right" richColors />
         </ThemeProvider>
+        <GoogleAnalytics gaId="G-PZE529NJB8" />
+
+        <Toaster position="top-right" richColors />
       </body>
     </html>
-  )
+  );
 }
