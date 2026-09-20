@@ -3,22 +3,20 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { 
-  Building2, 
-  Globe, 
-  Smartphone, 
-  Zap, 
-  Users, 
-  TrendingUp, 
-  CheckCircle, 
-  ArrowRight,
-  Star,
-  Clock,
-  Shield
+import {
+  Building2,
+  Globe,
+  Smartphone,
+  CheckCircle,
+  ArrowUpRight,
+  Search,
+  PenTool,
+  Code2,
+  Rocket,
+  Mail,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { SectionEyebrow } from './section-eyebrow'
 
 export function BusinessCTASection() {
   const ref = useRef(null)
@@ -29,237 +27,168 @@ export function BusinessCTASection() {
       icon: Globe,
       title: "Business Websites",
       description: "Professional, responsive websites that represent your brand and drive conversions",
-      features: ["Custom Design", "Mobile Responsive", "SEO Optimized", "Fast Loading"]
+      features: ["Custom Design", "Mobile Responsive", "SEO Optimized"]
     },
     {
       icon: Building2,
       title: "E-commerce Solutions",
       description: "Complete online stores with payment processing and inventory management",
-      features: ["Payment Integration", "Product Management", "Order Tracking", "Admin Dashboard"]
+      features: ["Payment Integration", "Order Tracking", "Admin Dashboard"]
     },
     {
       icon: Smartphone,
       title: "Web Applications",
       description: "Custom web applications tailored to your business needs and workflows",
-      features: ["User Authentication", "Data Management", "Real-time Updates", "Scalable Architecture"]
+      features: ["User Authentication", "Real-time Updates", "Scalable Architecture"]
     }
   ]
 
-  const benefits = [
-    {
-      icon: Zap,
-      title: "Fast Delivery",
-      description: "Get your website live in 2-4 weeks with regular updates and communication"
-    },
-    {
-      icon: Shield,
-      title: "Quality Assurance",
-      description: "Thorough testing and optimization to ensure your site works perfectly"
-    },
-    {
-      icon: Users,
-      title: "Ongoing Support",
-      description: "Continued maintenance and updates to keep your website running smoothly"
-    },
-    {
-      icon: TrendingUp,
-      title: "Business Growth",
-      description: "Websites designed to convert visitors into customers and grow your business"
-    }
+  const process = [
+    { icon: Search, title: "Discover", description: "Define your goals, audience, and what the site needs to achieve" },
+    { icon: PenTool, title: "Design", description: "A custom look built around your brand — no generic templates" },
+    { icon: Code2, title: "Build", description: "Clean, tested code with regular check-ins along the way" },
+    { icon: Rocket, title: "Launch", description: "Your site goes live, with support after to keep it running" },
   ]
-
-  const testimonials = [
-    {
-      quote: "Ally delivered an exceptional website that perfectly represents our business. The attention to detail and modern design exceeded our expectations.",
-      author: "Business Owner",
-      rating: 5
-    },
-    {
-      quote: "Professional, reliable, and skilled. Our new website has significantly improved our online presence and customer engagement.",
-      author: "Company Director",
-      rating: 5
-    }
-  ]
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6
-      }
-    }
-  }
 
   const handleGetStarted = () => {
     toast.success("Let's build your dream website!", {
       description: "I'll get back to you within 24 hours to discuss your project.",
     })
-    const contactSection = document.getElementById('contact')
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' })
-    }
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-purple-500/5">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          ref={ref}
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          className="max-w-7xl mx-auto"
-        >
-          {/* Section Header */}
-          <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              Want a Professional Website for Your <span className="gradient-text">Business?</span>
-            </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Let's build it together. I create modern, responsive websites that help businesses establish their digital presence and grow their customer base.
-            </p>
-          </motion.div>
+    <>
+      <section className="py-24 sm:py-32 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            ref={ref}
+            variants={containerVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            className="max-w-7xl mx-auto"
+          >
+            <motion.div variants={itemVariants} className="mb-14">
+              <SectionEyebrow index="06" label="Solutions" />
+              <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-foreground mt-6 max-w-2xl leading-[1.1]">
+                Software built to grow
+                <br />
+                your <span className="italic text-primary underline-swipe">business</span>.
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mt-6">
+                Let's build it together. I design and develop custom websites and web
+                applications that help businesses establish their digital presence and
+                grow their customer base.
+              </p>
+            </motion.div>
 
-          {/* Services Grid */}
-          <motion.div variants={itemVariants} className="grid md:grid-cols-3 gap-8 mb-16">
-            {services.map((service, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.05, y: -5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-background/50 backdrop-blur-sm h-full">
-                  <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <service.icon className="w-8 h-8 text-white" />
+            {/* Services */}
+            <div className="grid md:grid-cols-3 gap-6 mb-20">
+              {services.map((service, index) => (
+                <motion.div
+                  key={index}
+                  variants={itemVariants}
+                  className="relative bg-card border border-border rounded-2xl p-7"
+                >
+                  <span className="absolute top-6 right-7 font-serif italic text-sm text-muted-foreground/50">
+                    0{index + 1}
+                  </span>
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-5">
+                    <service.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-serif text-xl text-foreground mb-2">{service.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-5">{service.description}</p>
+                  <ul className="space-y-1.5">
+                    {service.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center gap-2 text-sm text-foreground/80">
+                        <CheckCircle className="w-3.5 h-3.5 text-moss shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Process */}
+            <motion.div variants={itemVariants}>
+              <h3 className="text-sm font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-8">
+                How We'll Work Together
+              </h3>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-x divide-border border-y border-border">
+                {process.map((step, index) => (
+                  <div key={index} className="py-6 sm:py-8 sm:px-6 first:pl-0">
+                    <div className="flex items-center gap-3 mb-3">
+                      <step.icon className="w-5 h-5 text-primary" />
+                      <span className="text-xs font-bold tracking-widest text-muted-foreground">STEP 0{index + 1}</span>
                     </div>
-                    <h3 className="text-xl font-semibold mb-4">{service.title}</h3>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
-                      {service.description}
-                    </p>
-                    <ul className="space-y-2">
-                      {service.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center space-x-2 text-sm">
-                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                    <h4 className="font-serif text-lg text-foreground mb-1.5">{step.title}</h4>
+                    <p className="text-sm text-muted-foreground">{step.description}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </motion.div>
+        </div>
+      </section>
 
-          {/* Benefits Section */}
-          <motion.div variants={itemVariants} className="mb-16">
-            <h3 className="text-3xl font-bold text-center mb-12">Why Choose alkindyTech?</h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {benefits.map((benefit, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card className="border-0 shadow-lg bg-background/50 backdrop-blur-sm h-full">
-                    <CardContent className="p-6 text-center">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                        <benefit.icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <h4 className="font-semibold mb-2">{benefit.title}</h4>
-                      <p className="text-sm text-muted-foreground">{benefit.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+      {/* Mission quote band */}
+      <section className="bg-foreground text-background bg-grain py-20 sm:py-28">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <span className="font-serif text-6xl sm:text-7xl text-primary leading-none">&ldquo;</span>
+            <p className="font-serif text-2xl sm:text-4xl leading-snug mb-2 -mt-4">
+              Every project should do two things: look like it belongs to your brand,
+              and{" "}
+              <span className="italic text-primary">actually move your business forward.</span>
+            </p>
+            <p className="text-background/60 mt-8 max-w-xl mx-auto">
+              That's the standard I hold every build to — from a five-page business site
+              to a full web application.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA band */}
+      <section className="bg-primary text-primary-foreground py-16 sm:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h3 className="font-serif text-3xl sm:text-5xl leading-tight mb-6">
+              Ready to transform your business online?
+            </h3>
+            <p className="text-primary-foreground/80 mb-8">
+              Typical reply time: within 24 hours.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={handleGetStarted}
+                className="inline-flex items-center justify-center gap-2 bg-primary-foreground text-primary rounded-full pl-7 pr-6 py-4 text-base font-semibold hover:opacity-90 transition-opacity"
+              >
+                Start Your Project
+                <ArrowUpRight className="w-5 h-5" />
+              </button>
+              <a
+                href="mailto:allymohammedsaid126@gmail.com"
+                className="inline-flex items-center justify-center gap-2 border-2 border-primary-foreground/40 rounded-full px-6 py-[14px] text-base font-semibold hover:border-primary-foreground transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                Email Me Directly
+              </a>
             </div>
-          </motion.div>
-
-          {/* Testimonials */}
-          <motion.div variants={itemVariants} className="mb-16">
-            <h3 className="text-3xl font-bold text-center mb-12">What Clients Say</h3>
-            <div className="grid md:grid-cols-2 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card className="border-0 shadow-lg bg-background/50 backdrop-blur-sm">
-                    <CardContent className="p-8">
-                      <div className="flex items-center space-x-1 mb-4">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                      <blockquote className="text-muted-foreground italic mb-4 leading-relaxed">
-                        "{testimonial.quote}"
-                      </blockquote>
-                      <cite className="text-sm font-medium">— {testimonial.author}</cite>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Main CTA */}
-          <motion.div variants={itemVariants} className="text-center">
-            <Card className="border-0 shadow-2xl bg-gradient-to-r from-primary/10 to-purple-500/10 max-w-4xl mx-auto">
-              <CardContent className="p-12">
-                <div className="mb-8">
-                  <h3 className="text-3xl sm:text-4xl font-bold mb-4">
-                    Ready to Transform Your Business Online?
-                  </h3>
-                
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      size="lg"
-                      onClick={handleGetStarted}
-                      className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      Hire Me Now
-                      <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={() => {
-                        const projectsSection = document.getElementById('projects')
-                        if (projectsSection) {
-                          projectsSection.scrollIntoView({ behavior: 'smooth' })
-                        }
-                      }}
-                      className="px-8 py-4 text-lg font-semibold border-2 hover:bg-primary hover:text-white transition-all duration-300"
-                    >
-                      View My Work
-                    </Button>
-                  </motion.div>
-                </div>
-
-               
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

@@ -3,119 +3,98 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { ExternalLink, Github, Users, TrendingUp, Calendar, Globe } from 'lucide-react'
+import { ArrowUpRight, Users, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import Image from 'next/image'
+import { SectionEyebrow } from './section-eyebrow'
+
+const featuredProjects = [
+  {
+    title: "Whitecaps Safaris",
+    longDescription: "Designed and built a full travel platform for Whitecaps Safaris, covering wildlife safaris, mountain trekking, island escapes, and cultural tours across Tanzania. The site pairs an editorial, high-end visual identity with fast-loading pages, direct WhatsApp booking, and clear trip information — giving the agency a digital presence that matches the caliber of the experiences it sells.",
+    image: "/assets/whitecapes-live-demo.png",
+    liveUrl: "https://whitecaps.vercel.app",
+    technologies: ["React.js", "Next.js", "Tailwind CSS"],
+    features: [
+      "Custom booking funnel with direct WhatsApp inquiries",
+      "Experience categories for safaris, trekking, islands and culture",
+      "Google reviews and trust signals surfaced on the homepage",
+      "Fully responsive, fast-loading build",
+    ],
+    stat: "5.0★ Google rating, 24 reviews",
+    category: "Travel & Hospitality",
+  },
+  {
+    title: "Binary Flow",
+    longDescription: "Designed and built the marketing site for Binary Flow, a software development studio offering custom builds, integrations, and long-term support. The homepage leads with a clear value proposition, a fully working light/dark theme, and a trusted-by strip of real client logos — giving the studio a credible, modern presence for bringing in new project inquiries.",
+    image: "/assets/binary-Flow-Tech-live-demo.png",
+    liveUrl: "https://binary-flow-tech.vercel.app",
+    technologies: ["React.js", "Next.js", "Tailwind CSS"],
+    features: [
+      "Working light/dark theme toggle",
+      "Services, Process, Projects and Reviews sections",
+      "Trusted-by carousel featuring real client brands",
+      "Device-mockup hero for instant context",
+    ],
+    stat: "Trusted by Clubzila, Zamotto, Kuza Business & more",
+    category: "Software Agency",
+  },
+]
+
+const projects = [
+  {
+    title: "Zadaawa",
+    description: "A comprehensive Hajj travelling agency platform serving 300+ monthly visitors with seamless booking and travel management.",
+    image: "/assets/zadawa-live-demo.png",
+    liveUrl: "https://zadaawa.com",
+    technologies: ["React.js", "Next.js", "Node.js", "MongoDB"],
+    stat: "300+ monthly visitors",
+    category: "E-commerce & Travel",
+    status: "Production",
+  },
+  {
+    title: "Aviground",
+    description: "A pilot examination training platform in staging, nearly ready for production with comprehensive learning modules.",
+    image: "/assets/aviground-live-demo.png",
+    liveUrl: "https://aviground.com",
+    technologies: ["React.js", "Next.js", "TypeScript", "Prisma"],
+    stat: "Staging phase",
+    category: "Education & Training",
+    status: "Near Production",
+  },
+  {
+    title: "CCS Sumoja Fund",
+    description: "A comprehensive fund management system with 100+ registered users and complete financial tracking.",
+    image: "/assets/umoja-fund-live-demo.png",
+    liveUrl: "https://ccssumojafund-1.onrender.com",
+    technologies: ["React.js", "Node.js", "MongoDB", "Chart.js"],
+    stat: "100+ registered users",
+    category: "Finance & Management",
+    status: "Production",
+  },
+]
 
 export function ProjectsSection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
-  const projects = [
-    {
-      title: "Zadaawa",
-      description: "A comprehensive Hajj travelling agency platform serving 300+ monthly visitors with seamless booking and travel management capabilities.",
-      longDescription: "Built a full-stack web application for a Hajj travelling agency that handles complex booking systems, payment processing, and travel itinerary management. The platform serves over 300 visitors monthly and provides a complete digital solution for religious travel services.",
-      image: "/assets/zadawa-live-demo.png",
-      liveUrl: "https://zadaawa.com",
-      githubUrl: null,
-      technologies: ["React.js", "Next.js", "Node.js", "MongoDB", "Tailwind CSS", "Payment Integration"],
-      features: [
-        "User registration and authentication",
-        "Travel package booking system",
-        "Payment processing integration",
-        "Admin dashboard for travel management",
-        "Responsive design for all devices",
-        "Multi-language support"
-      ],
-      stats: {
-        visitors: "300+",
-        period: "monthly",
-        status: "Production"
-      },
-      category: "E-commerce & Travel",
-      color: "from-blue-500 to-cyan-500"
-    },
-    {
-      title: "Aviground",
-      description: "A pilot examination training platform in staging phase, nearly ready for production deployment with comprehensive learning modules.",
-      longDescription: "Developed an advanced pilot examination training platform featuring interactive learning modules, practice tests, and progress tracking. The application is currently in staging phase and nearly ready for production deployment, providing aspiring pilots with comprehensive training resources.",
-      image: "/assets/aviground-live-demo.png",
-      liveUrl: "https://aviground.com",
-      githubUrl: null,
-      technologies: ["React.js", "Next.js", "TypeScript", "PostgreSQL", "Prisma", "Tailwind CSS"],
-      features: [
-        "Interactive learning modules",
-        "Practice examination system",
-        "Progress tracking and analytics",
-        "User performance dashboard",
-        "Content management system",
-        "Real-time progress updates"
-      ],
-      stats: {
-        visitors: "Staging",
-        period: "phase",
-        status: "Near Production"
-      },
-      category: "Education & Training",
-      color: "from-green-500 to-emerald-500"
-    },
-    {
-      title: "CCS Sumoja Fund",
-      description: "A comprehensive fund management system with 100+ registered users, providing complete financial tracking and management capabilities.",
-      longDescription: "Created a sophisticated fund management system that handles financial transactions, user management, and comprehensive reporting. The platform serves over 100 registered users and provides a complete solution for fund administration, tracking, and management.",
-      image: "/assets/umoja-fund-live-demo.png",
-      liveUrl: "https://ccssumojafund-1.onrender.com",
-      githubUrl: null,
-      technologies: ["React.js", "Node.js", "Express.js", "MongoDB", "JWT Authentication", "Chart.js"],
-      features: [
-        "User registration and authentication",
-        "Fund contribution tracking",
-        "Financial reporting and analytics",
-        "Admin panel for fund management",
-        "Transaction history and records",
-        "Automated calculations and summaries"
-      ],
-      stats: {
-        visitors: "100+",
-        period: "registered users",
-        status: "Production"
-      },
-      category: "Finance & Management",
-      color: "from-purple-500 to-pink-500"
-    }
-  ]
-
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
   }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6
-      }
-    }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   }
 
   const handleProjectClick = (url: string, title: string) => {
-    toast.success(`Opening ${title}`, {
-      description: "Redirecting to the live project...",
-    })
+    toast.success(`Opening ${title}`, { description: "Redirecting to the live project..." })
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   return (
-    <section id="projects" className="py-20 bg-slate-900">
+    <section id="projects" className="py-24 sm:py-32 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           ref={ref}
@@ -124,161 +103,137 @@ export function ProjectsSection() {
           animate={isInView ? "visible" : "hidden"}
           className="max-w-7xl mx-auto"
         >
-          {/* Section Header */}
-          <motion.div variants={itemVariants} className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-white">
-              Featured <span className="text-blue-400">Projects</span>
+          <motion.div variants={itemVariants} className="mb-14">
+            <SectionEyebrow index="03" label="Selected Work" />
+            <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-foreground mt-6 max-w-2xl leading-[1.1]">
+              Real products, real
+              <br />
+              <span className="italic text-primary underline-swipe">businesses</span>.
             </h2>
-            <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Real-world applications built with <span className="text-blue-400 font-semibold">modern technologies</span>, serving actual users and businesses
-            </p>
           </motion.div>
 
-          {/* Projects Grid */}
-          <div className="grid lg:grid-cols-1 gap-8">
+          {/* Featured projects */}
+          <div className="space-y-8 mb-8">
+            {featuredProjects.map((featured, fIndex) => (
+              <motion.div key={featured.title} variants={itemVariants}>
+                <div className="grid lg:grid-cols-2 gap-0 bg-card border border-primary/30 rounded-2xl overflow-hidden shadow-professional">
+                  <div className={`relative h-72 lg:h-auto ${fIndex % 2 === 1 ? "lg:order-2" : ""}`}>
+                    <Image
+                      src={featured.image}
+                      alt={`${featured.title} - Live Demo Screenshot`}
+                      fill
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                    <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-background/95 text-foreground px-3 py-1 rounded-full text-xs font-bold shadow-professional">
+                      <Sparkles className="w-3.5 h-3.5 text-primary" />
+                      Featured
+                    </div>
+                  </div>
+                  <div className={`p-8 sm:p-10 flex flex-col ${fIndex % 2 === 1 ? "lg:order-1" : ""}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-semibold tracking-widest uppercase text-primary">{featured.category}</span>
+                      <span className="font-serif italic text-sm text-muted-foreground/60">AS / 0{fIndex + 1}</span>
+                    </div>
+                    <h3 className="font-serif text-2xl sm:text-3xl text-foreground mb-3">{featured.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed mb-5">{featured.longDescription}</p>
+
+                    <div className="flex items-center gap-2 mb-5 text-sm font-medium text-foreground">
+                      <Users className="w-4 h-4 text-primary" />
+                      {featured.stat}
+                    </div>
+
+                    <ul className="space-y-2 mb-6">
+                      {featured.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <span className="w-1 h-1 rounded-full bg-primary mt-2 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {featured.technologies.map((tech) => (
+                        <span key={tech} className="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => handleProjectClick(featured.liveUrl, featured.title)}
+                      className="mt-auto inline-flex items-center gap-2 self-start bg-foreground text-background rounded-full pl-6 pr-5 py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
+                    >
+                      View Live
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Other projects */}
+          <div className="grid md:grid-cols-3 gap-6">
             {projects.map((project, index) => (
               <motion.div
                 key={index}
                 variants={itemVariants}
-                className="group"
+                className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/40 transition-colors"
               >
-                <Card className="border-0 shadow-colored-lg hover:shadow-glow-lg transition-all duration-500 bg-slate-800/50 backdrop-blur-md glass-strong overflow-hidden group">
-                  <div className="grid lg:grid-cols-2 gap-0">
-                    {/* Project Image */}
-                    <div className="relative overflow-hidden">
-                      <div className="h-64 lg:h-full relative">
-                        <img
-                          src={project.image}
-                          alt={`${project.title} - Live Demo Screenshot`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute bottom-4 left-4 text-white">
-                          <h3 className="text-2xl font-bold mb-1">{project.title}</h3>
-                          <p className="text-sm opacity-90">{project.category}</p>
-                        </div>
-                        <div className="absolute top-4 right-4">
-                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            project.stats.status === 'Production' 
-                              ? 'bg-green-500/90 text-white' 
-                              : 'bg-yellow-500/90 text-white'
-                          }`}>
-                            {project.stats.status}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Project Content */}
-                    <CardContent className="p-8">
-                      <div className="h-full flex flex-col">
-                        {/* Description */}
-                        <div className="mb-6">
-                          <p className="text-muted-foreground leading-relaxed text-lg">
-                            {project.description}
-                          </p>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="mb-6">
-                          <div className="flex items-center space-x-6">
-                            <div className="flex items-center space-x-2">
-                              <Users className="w-4 h-4 text-primary" />
-                              <span className="text-sm font-medium">{project.stats.visitors} {project.stats.period}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <TrendingUp className="w-4 h-4 text-primary" />
-                              <span className="text-sm font-medium">{project.category}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Technologies */}
-                        <div className="mb-6">
-                          <h4 className="text-sm font-semibold mb-3">Technologies Used</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {project.technologies.map((tech, techIndex) => (
-                              <span
-                                key={techIndex}
-                                className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Key Features */}
-                        <div className="mb-6 flex-1">
-                          <h4 className="text-sm font-semibold mb-3">Key Features</h4>
-                          <ul className="space-y-1">
-                            {project.features.slice(0, 4).map((feature, featureIndex) => (
-                              <li key={featureIndex} className="flex items-start space-x-2 text-sm text-muted-foreground">
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                            {project.features.length > 4 && (
-                              <li className="text-xs text-muted-foreground">
-                                +{project.features.length - 4} more features
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex space-x-3">
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleProjectClick(project.liveUrl, project.title)}
-                            className="flex-1 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center space-x-2"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            <span>View Live</span>
-                          </motion.button>
-                          {project.githubUrl && (
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleProjectClick(project.githubUrl!, project.title)}
-                              className="px-4 py-2 border border-primary text-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors flex items-center justify-center"
-                            >
-                              <Github className="w-4 h-4" />
-                            </motion.button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
+                <div className="relative h-44 overflow-hidden">
+                  <Image
+                    src={project.image}
+                    alt={`${project.title} - Live Demo Screenshot`}
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute bottom-3 right-3 font-serif italic text-white/90 text-sm drop-shadow">
+                    AS / 0{index + 3}
+                  </span>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-semibold tracking-widest uppercase text-primary">{project.category}</span>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                      project.status === 'Production' ? 'bg-moss/15 text-moss' : 'bg-primary/15 text-primary'
+                    }`}>
+                      {project.status}
+                    </span>
                   </div>
-                </Card>
+                  <h3 className="font-serif text-xl text-foreground mb-2">{project.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{project.description}</p>
+                  <p className="text-xs text-muted-foreground mb-4">{project.stat}</p>
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {project.technologies.map((tech) => (
+                      <span key={tech} className="px-2.5 py-1 bg-muted text-muted-foreground text-[11px] font-medium rounded-full">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => handleProjectClick(project.liveUrl, project.title)}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  >
+                    View Live
+                    <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
 
           {/* Call to Action */}
-          <motion.div
-            variants={itemVariants}
-            className="text-center mt-16"
-          >
-            <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-purple-500/5 max-w-2xl mx-auto">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-semibold mb-6">Interested in Working Together?</h3>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    const contactSection = document.getElementById('contact')
-                    if (contactSection) {
-                      contactSection.scrollIntoView({ behavior: 'smooth' })
-                    }
-                  }}
-                  className="px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-                >
-                  Start a Project
-                </motion.button>
-              </CardContent>
-            </Card>
+          <motion.div variants={itemVariants} className="text-center mt-16">
+            <p className="text-lg text-muted-foreground mb-5">Interested in working together?</p>
+            <button
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+              className="inline-flex items-center gap-2 bg-foreground text-background rounded-full pl-7 pr-6 py-4 text-base font-semibold hover:opacity-90 transition-opacity"
+            >
+              Start a Project
+              <ArrowUpRight className="w-5 h-5" />
+            </button>
           </motion.div>
         </motion.div>
       </div>

@@ -1,24 +1,48 @@
 import type { Metadata } from "next";
+import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ThemeProvider } from "@/components/sections/theme-provider";
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const SITE_URL = "https://alkindytech.com";
+const SITE_TITLE = "alkindyTech — Web Developer & Software Solutions";
+const SITE_DESCRIPTION =
+  "alkindyTech is the studio of Ally M. Said, a web developer building custom websites and software solutions with React, Next.js, and TypeScript for businesses that want to win online.";
+
 export const metadata: Metadata = {
-  title: "alkindyTech - Crafting Modern Websites That Inspire",
-  description:
-    "Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies. Building exceptional digital experiences for businesses and organizations.",
+  title: {
+    default: SITE_TITLE,
+    template: "%s | alkindyTech",
+  },
+  description: SITE_DESCRIPTION,
   keywords: [
     "web developer",
-    "frontend developer",
-    "React",
-    "Next.js",
+    "software solutions",
+    "custom web development",
+    "React developer",
+    "Next.js developer",
     "TypeScript",
-    "freelance",
-    "web design",
-    "Tanzania",
+    "business website design",
+    "web application development",
+    "alkindyTech",
+    "Tanzania web developer",
+    "Dar es Salaam web developer",
   ],
-  authors: [{ name: "Ally M. Said", url: "https://alkindytech.com" }],
+  authors: [{ name: "Ally M. Said", url: SITE_URL }],
   creator: "Ally M. Said",
   publisher: "alkindyTech",
   formatDetection: {
@@ -26,7 +50,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://alkindytech.com"),
+  metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: "/",
   },
@@ -41,28 +65,17 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "alkindyTech - Crafting Modern Websites That Inspire",
-    description:
-      "Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies.",
-    url: "https://alkindytech.com",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
     siteName: "alkindyTech",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "alkindyTech - Professional Web Developer",
-      },
-    ],
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "alkindyTech - Crafting Modern Websites That Inspire",
-    description:
-      "Professional freelance web developer and frontend engineer specializing in React, Next.js, and modern web technologies.",
-    images: ["/og-image.jpg"],
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
   robots: {
     index: true,
@@ -77,14 +90,53 @@ export const metadata: Metadata = {
   },
 };
 
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "@id": `${SITE_URL}/#business`,
+  name: "alkindyTech",
+  url: SITE_URL,
+  image: `${SITE_URL}/assets/alkindy.png`,
+  description: SITE_DESCRIPTION,
+  founder: {
+    "@type": "Person",
+    name: "Ally M. Said",
+    jobTitle: "Web Developer",
+    url: SITE_URL,
+    sameAs: [
+      "https://github.com/allyalkindy",
+      "https://www.linkedin.com/in/ally-mohammed-96a31a319",
+    ],
+  },
+  areaServed: "Worldwide",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Dar es Salaam",
+    addressCountry: "TZ",
+  },
+  email: "allymohammedsaid126@gmail.com",
+  sameAs: [
+    "https://github.com/allyalkindy",
+    "https://www.linkedin.com/in/ally-mohammed-96a31a319",
+  ],
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${fraunces.variable}`}
+    >
       <body className="font-sans">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

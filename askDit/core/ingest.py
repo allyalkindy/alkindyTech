@@ -30,13 +30,15 @@ def split_documents(docs):
     return splitter.split_documents(docs)
 
 
+
+
 def build_index():
     print("Loading PDFs...")
     docs = load_pdfs()
-
+   
     print("Splitting documents...")
     chunks = split_documents(docs)
-
+   
     print("Creating embeddings...")
     embeddings = get_embeddings()
 

@@ -17,7 +17,6 @@ class AskDitEngine:
         self.model = "hf.co/cognitivecomputations/Dolphin3.0-Llama3.1-8B-GGUF:Q4_0"
 
     def build_prompt(self, context, question):
-        print("context", context)
         return f"""
 You are AskDit assistant.
 
