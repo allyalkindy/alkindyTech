@@ -7,35 +7,25 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   const socialLinks = [
-    {
-      name: "GitHub",
-      url: "https://github.com/allysaid",
-      icon: Github
-    },
-    {
-      name: "LinkedIn", 
-      url: "https://linkedin.com/in/allysaid",
-      icon: Linkedin
-    },
-    {
-      name: "Email",
-      url: "mailto:allymohammedsaid126@gmail.com",
-      icon: Mail
-    }
+    { name: "GitHub", url: "https://github.com/allyalkindy", icon: Github },
+    { name: "LinkedIn", url: "https://www.linkedin.com/in/ally-mohammed-96a31a319", icon: Linkedin },
+    { name: "Email", url: "mailto:allymohammedsaid126@gmail.com", icon: Mail }
   ]
 
   const quickLinks = [
-    { name: "About", href: "#about" },
-    { name: "Experience", href: "#experience" },
-    { name: "Projects", href: "#projects" },
-    { name: "Skills", href: "#skills" },
-    { name: "Contact", href: "#contact" }
+    { name: "About", href: "/#about" },
+    { name: "Work", href: "/#projects" },
+    { name: "Experience", href: "/#experience" },
+    { name: "Skills", href: "/#skills" },
+    { name: "Solutions", href: "/solutions" },
+    { name: "Contact", href: "/#contact" }
   ]
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+  const goToLink = (href: string) => {
+    if (href.startsWith("/#") && window.location.pathname === "/") {
+      document.querySelector(href.slice(1))?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      window.location.href = href
     }
   }
 
@@ -44,9 +34,9 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-muted/50 border-t border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-3 gap-8">
+    <footer className="bg-foreground text-background bg-grain">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid md:grid-cols-3 gap-10">
           {/* Brand Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -55,28 +45,24 @@ export function Footer() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <span className="text-xl font-bold gradient-text">alkindyTech</span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="font-serif italic text-2xl text-primary">alkindy</span>
+              <span className="font-sans font-bold text-2xl text-background">Tech</span>
             </div>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Crafting modern websites that inspire. Professional web development services 
-              for businesses and organizations worldwide.
+            <p className="text-background/60 text-sm leading-relaxed max-w-xs">
+              Custom websites and web applications, built for businesses that want more
+              than a template.
             </p>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3 pt-2">
               {socialLinks.map((social, index) => (
-                <motion.button
+                <button
                   key={index}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleSocialClick(social.url)}
-                  className="w-10 h-10 bg-primary/10 hover:bg-primary/20 rounded-lg flex items-center justify-center transition-colors"
+                  className="w-10 h-10 border border-background/20 hover:border-primary hover:text-primary rounded-full flex items-center justify-center transition-colors"
                   aria-label={social.name}
                 >
-                  <social.icon className="w-5 h-5 text-primary" />
-                </motion.button>
+                  <social.icon className="w-4 h-4" />
+                </button>
               ))}
             </div>
           </motion.div>
@@ -89,17 +75,16 @@ export function Footer() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <h3 className="text-lg font-semibold">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 className="text-xs font-semibold tracking-[0.2em] uppercase text-background/50">Quick Links</h3>
+            <ul className="space-y-2.5">
               {quickLinks.map((link, index) => (
                 <li key={index}>
-                  <motion.button
-                    whileHover={{ x: 5 }}
-                    onClick={() => scrollToSection(link.href)}
-                    className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                  <button
+                    onClick={() => goToLink(link.href)}
+                    className="text-background/75 hover:text-primary transition-colors text-sm"
                   >
                     {link.name}
-                  </motion.button>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -113,26 +98,22 @@ export function Footer() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <h3 className="text-lg font-semibold">Get in Touch</h3>
-            <div className="space-y-3">
-              <motion.button
-                whileHover={{ x: 5 }}
+            <h3 className="text-xs font-semibold tracking-[0.2em] uppercase text-background/50">Get in Touch</h3>
+            <div className="space-y-3 text-sm">
+              <button
                 onClick={() => handleSocialClick("mailto:allymohammedsaid126@gmail.com")}
-                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+                className="flex items-center gap-2 text-background/75 hover:text-primary transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                <span>allymohammedsaid126@gmail.com</span>
-              </motion.button>
-              <motion.button
-                whileHover={{ x: 5 }}
+                allymohammedsaid126@gmail.com
+              </button>
+              <button
                 onClick={() => handleSocialClick("https://wa.me/255655206601")}
-                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+                className="flex items-center gap-2 text-background/75 hover:text-primary transition-colors"
               >
-                <span>+255 655 206 601</span>
-              </motion.button>
-              <div className="flex items-center space-x-2 text-muted-foreground text-sm">
-                <span>Dar es Salaam, Tanzania</span>
-              </div>
+                +255 655 206 601
+              </button>
+              <div className="text-background/60">Dar es Salaam, Tanzania</div>
             </div>
           </motion.div>
         </div>
@@ -143,22 +124,15 @@ export function Footer() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
           viewport={{ once: true }}
-          className="mt-12 pt-8 border-t border-border"
+          className="mt-14 pt-8 border-t border-background/15 flex flex-col md:flex-row items-center justify-between gap-4"
         >
-          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span>© {currentYear} alkindyTech. All rights reserved.</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span>Made with</span>
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              >
-                <Heart className="w-4 h-4 text-red-500 fill-current" />
-              </motion.div>
-              <span>by Ally M. Said</span>
-            </div>
+          <span className="text-sm text-background/50">© {currentYear} alkindyTech. All rights reserved.</span>
+          <div className="flex items-center gap-2 text-sm text-background/50">
+            <span>Made with</span>
+            <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1, repeat: Infinity }}>
+              <Heart className="w-4 h-4 text-primary fill-current" />
+            </motion.span>
+            <span>by Ally M. Said</span>
           </div>
         </motion.div>
       </div>

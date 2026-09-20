@@ -1,53 +1,56 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 214 100% 50%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 214 100% 50%;
-    --radius: 0.5rem;
+    /* Warm paper + ink editorial palette */
+    --background: 42 38% 94%;
+    --foreground: 27 20% 11%;
+    --card: 42 40% 97%;
+    --card-foreground: 27 20% 11%;
+    --popover: 42 40% 97%;
+    --popover-foreground: 27 20% 11%;
+    --primary: 18 68% 45%;
+    --primary-foreground: 42 45% 97%;
+    --secondary: 40 22% 88%;
+    --secondary-foreground: 27 20% 11%;
+    --muted: 40 24% 89%;
+    --muted-foreground: 28 10% 38%;
+    --accent: 40 24% 89%;
+    --accent-foreground: 27 20% 11%;
+    --moss: 140 22% 28%;
+    --moss-foreground: 42 45% 97%;
+    --destructive: 5 70% 42%;
+    --destructive-foreground: 42 45% 97%;
+    --border: 32 18% 83%;
+    --input: 32 18% 83%;
+    --ring: 18 68% 45%;
+    --radius: 0.85rem;
   }
 
   .dark {
-    --background: 220 25% 8%;
-    --foreground: 210 40% 98%;
-    --card: 220 25% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 220 25% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 214 100% 60%;
-    --primary-foreground: 220 25% 8%;
-    --secondary: 220 25% 15%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 220 25% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 220 25% 15%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 220 25% 15%;
-    --input: 220 25% 15%;
-    --ring: 214 100% 60%;
+    --background: 30 14% 8%;
+    --foreground: 42 30% 94%;
+    --card: 30 13% 11%;
+    --card-foreground: 42 30% 94%;
+    --popover: 30 13% 11%;
+    --popover-foreground: 42 30% 94%;
+    --primary: 22 78% 58%;
+    --primary-foreground: 30 14% 8%;
+    --secondary: 30 12% 16%;
+    --secondary-foreground: 42 30% 94%;
+    --muted: 30 12% 15%;
+    --muted-foreground: 38 14% 66%;
+    --accent: 30 12% 16%;
+    --accent-foreground: 42 30% 94%;
+    --moss: 140 24% 58%;
+    --moss-foreground: 30 14% 8%;
+    --destructive: 5 65% 55%;
+    --destructive-foreground: 30 14% 8%;
+    --border: 30 12% 20%;
+    --input: 30 12% 20%;
+    --ring: 22 78% 58%;
   }
 }
 
@@ -57,7 +60,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 }
 
@@ -71,7 +73,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary rounded-full;
+  @apply bg-primary/60 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -83,63 +85,59 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
+/* Subtle paper grain — tactile, editorial texture over flat colour fields */
+.bg-grain {
+  position: relative;
+}
+
+.bg-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
+
+.dark .bg-grain::before {
+  opacity: 0.7;
+}
+
+/* Underline swipe — used under italic accent words in headlines */
+.underline-swipe {
+  position: relative;
+  display: inline-block;
+}
+
+.underline-swipe::after {
+  content: "";
+  position: absolute;
+  left: 0.05em;
+  right: 0.05em;
+  bottom: 0.06em;
+  height: 0.09em;
+  background: hsl(var(--primary));
+  border-radius: 999px;
+  transform-origin: left;
+}
+
+/* Infinite marquee strip */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
   }
-  50% {
-    transform: translateY(-10px);
+  to {
+    transform: translateX(-50%);
   }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-marquee {
+  animation: marquee 32s linear infinite;
 }
 
-/* Professional gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-text-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Professional glass effect */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dark .glass {
-  background: rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Professional gradients */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-}
-
-.bg-gradient-secondary {
-  background: linear-gradient(135deg, #1e40af 0%, #60a5fa 100%);
-}
-
-/* Professional shadows */
-.shadow-professional {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.dark .shadow-professional {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 @keyframes fadeIn {
@@ -155,4 +153,13 @@ html {
 
 .animate-fadeIn {
   animation: fadeIn 0.5s ease forwards;
+}
+
+/* Soft elevated shadow used on cards outside the shadcn card system */
+.shadow-professional {
+  box-shadow: 0 4px 20px rgba(30, 20, 10, 0.08);
+}
+
+.dark .shadow-professional {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
 }
