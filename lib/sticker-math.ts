@@ -63,23 +63,25 @@ export interface StickerLayout {
 export function computeStickerLayout(args: {
   width: number;
   height: number;
-  padding: number;
+  paddingX: number;
+  paddingY: number;
   gap: number;
   borderWidth: number;
 }): StickerLayout {
-  const { width, height, padding, gap, borderWidth } = args;
-  const inset = padding + borderWidth;
+  const { width, height, paddingX, paddingY, gap, borderWidth } = args;
+  const insetX = paddingX + borderWidth;
+  const insetY = paddingY + borderWidth;
   const midX = width / 2;
-  const top = inset;
-  const bottom = height - inset;
+  const top = insetY;
+  const bottom = height - insetY;
   const frameH = Math.max(0, bottom - top);
 
-  const logoRight = Math.max(inset, midX - gap / 2);
-  const qrLeft = Math.min(width - inset, midX + gap / 2);
+  const logoRight = Math.max(insetX, midX - gap / 2);
+  const qrLeft = Math.min(width - insetX, midX + gap / 2);
 
   return {
-    logoFrame: { x: inset, y: top, w: Math.max(0, logoRight - inset), h: frameH },
-    qrFrame: { x: qrLeft, y: top, w: Math.max(0, width - inset - qrLeft), h: frameH },
+    logoFrame: { x: insetX, y: top, w: Math.max(0, logoRight - insetX), h: frameH },
+    qrFrame: { x: qrLeft, y: top, w: Math.max(0, width - insetX - qrLeft), h: frameH },
     dividerX: midX,
     contentTop: top,
     contentBottom: bottom,

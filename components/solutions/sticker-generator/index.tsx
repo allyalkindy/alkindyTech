@@ -10,14 +10,18 @@ import {
   DEFAULT_BORDER,
   DEFAULT_CONTENT_GAP_IN,
   DEFAULT_CROP,
+  DEFAULT_PADDING_X_IN,
+  DEFAULT_PADDING_Y_IN,
   DEFAULT_QR_COLOR,
   DEFAULT_STICKER_SIZE,
+  DEFAULT_WATERMARK,
   MAX_FILE_BYTES,
   MAX_QR_SCALE,
   type Border,
   type Crop,
   type NormalizedLogo,
   type StickerSize,
+  type Watermark,
 } from "./constants"
 
 function slugFromLink(url: string) {
@@ -75,7 +79,10 @@ export function StickerGenerator() {
   const [qrColor, setQrColor] = useState(DEFAULT_QR_COLOR)
   const [stickerSize, setStickerSize] = useState<StickerSize>(DEFAULT_STICKER_SIZE)
   const [contentGap, setContentGap] = useState(DEFAULT_CONTENT_GAP_IN)
+  const [paddingX, setPaddingX] = useState(DEFAULT_PADDING_X_IN)
+  const [paddingY, setPaddingY] = useState(DEFAULT_PADDING_Y_IN)
   const [border, setBorder] = useState<Border>(DEFAULT_BORDER)
+  const [watermark, setWatermark] = useState<Watermark>(DEFAULT_WATERMARK)
   const [isGenerating, setIsGenerating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -143,7 +150,10 @@ export function StickerGenerator() {
         qrScale,
         size: stickerSize,
         contentGap,
+        paddingX,
+        paddingY,
         border,
+        watermark,
         filename: `${slugFromLink(link)}-sticker.pdf`,
       })
       toast.success("Sticker downloaded", {
@@ -299,8 +309,14 @@ export function StickerGenerator() {
           onSizeChange={setStickerSize}
           contentGap={contentGap}
           onContentGapChange={setContentGap}
+          paddingX={paddingX}
+          onPaddingXChange={setPaddingX}
+          paddingY={paddingY}
+          onPaddingYChange={setPaddingY}
           border={border}
           onBorderChange={setBorder}
+          watermark={watermark}
+          onWatermarkChange={setWatermark}
         />
       </div>
     </div>

@@ -22,6 +22,15 @@ export interface Border {
   width: number
 }
 
+export type WatermarkFontId = "sans" | "serif" | "script" | "mono"
+
+export interface Watermark {
+  enabled: boolean
+  text: string
+  font: WatermarkFontId
+  opacity: number
+}
+
 export type ResizeHandle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w"
 
 export const DEFAULT_CROP: Crop = { zoom: 1, offsetXFrac: 0, offsetYFrac: 0 }
@@ -48,9 +57,13 @@ export const MAX_QR_SCALE = 1
 export const DEFAULT_QR_COLOR = "#1a1512"
 export const COLOR_PRESETS = ["#1a1512", "#000000", "#b3521f", "#2f3b2a", "#1d3a6e"]
 
-export const STICKER_PADDING_IN = 0.28
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
 export const EXPORT_DPI = 400
+
+export const DEFAULT_PADDING_X_IN = 0.28
+export const DEFAULT_PADDING_Y_IN = 0.28
+export const MIN_PADDING_IN = 0.05
+export const MAX_PADDING_IN = 0.6
 
 export const DEFAULT_CONTENT_GAP_IN = 0.3
 export const MIN_CONTENT_GAP_IN = 0.06
@@ -59,6 +72,21 @@ export const MAX_CONTENT_GAP_IN = 0.6
 export const DEFAULT_BORDER: Border = { enabled: false, color: "#1a1512", width: 0.04 }
 export const MIN_BORDER_WIDTH_IN = 0.02
 export const MAX_BORDER_WIDTH_IN = 0.12
+
+// Watermark fonts are plain web-safe stacks (not the site's next/font
+// faces) — canvas text rendering for the PDF needs a literal font-family
+// name, and next/font's generated names aren't reliably predictable.
+export const WATERMARK_FONTS: { id: WatermarkFontId; label: string; family: string }[] = [
+  { id: "sans", label: "Sans", family: "Arial, Helvetica, sans-serif" },
+  { id: "serif", label: "Serif", family: "Georgia, 'Times New Roman', serif" },
+  { id: "script", label: "Script", family: "'Brush Script MT', 'Segoe Script', cursive" },
+  { id: "mono", label: "Mono", family: "'Courier New', monospace" },
+]
+export const DEFAULT_WATERMARK: Watermark = { enabled: false, text: "SAMPLE", font: "sans", opacity: 0.15 }
+export const MIN_WATERMARK_OPACITY = 0.05
+export const MAX_WATERMARK_OPACITY = 0.5
+export const MAX_WATERMARK_TEXT_LENGTH = 24
+export const WATERMARK_ROTATION_DEG = -28
 
 // Minimum room, in inches, a logo/QR frame must keep on each side —
 // guards content geometry against gap/border values that would otherwise

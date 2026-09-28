@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef } from "react"
-import { ImageIcon, QrCode as QrCodeIcon, Move, Maximize2, Pipette, Square } from "lucide-react"
+import { ImageIcon, QrCode as QrCodeIcon, Move, Maximize2, Pipette, Square, Stamp } from "lucide-react"
 import { computeCoverLayout, computeStickerLayout, clamp, isLowContrastForScanning } from "@/lib/sticker-math"
 import { useElementSize } from "./use-element-size"
 import {
@@ -11,21 +11,28 @@ import {
   MAX_LOGO_ZOOM,
   MAX_QR_SCALE,
   MAX_STICKER_WIDTH,
+  MAX_WATERMARK_OPACITY,
+  MAX_WATERMARK_TEXT_LENGTH,
   MIN_BORDER_WIDTH_IN,
   MIN_CONTENT_GAP_IN,
   MIN_LOGO_ZOOM,
   MIN_QR_SCALE,
   MIN_STICKER_HEIGHT,
   MIN_STICKER_WIDTH,
+  MIN_WATERMARK_OPACITY,
   MIN_WIDTH_HEIGHT_GAP,
   MAX_STICKER_HEIGHT,
-  STICKER_PADDING_IN,
+  MIN_PADDING_IN,
+  MAX_PADDING_IN,
   SIZE_PRESETS,
+  WATERMARK_FONTS,
+  WATERMARK_ROTATION_DEG,
   type Border,
   type Crop,
   type NormalizedLogo,
   type ResizeHandle,
   type StickerSize,
+  type Watermark,
 } from "./constants"
 
 interface StickerPreviewProps {
@@ -41,8 +48,14 @@ interface StickerPreviewProps {
   onSizeChange: (size: StickerSize) => void
   contentGap: number
   onContentGapChange: (gap: number) => void
+  paddingX: number
+  onPaddingXChange: (padding: number) => void
+  paddingY: number
+  onPaddingYChange: (padding: number) => void
   border: Border
   onBorderChange: (border: Border) => void
+  watermark: Watermark
+  onWatermarkChange: (watermark: Watermark) => void
 }
 
 const HANDLE_CONFIG: Record<
@@ -72,8 +85,14 @@ export function StickerPreview({
   onSizeChange,
   contentGap,
   onContentGapChange,
+  paddingX,
+  onPaddingXChange,
+  paddingY,
+  onPaddingYChange,
   border,
   onBorderChange,
+  watermark,
+  onWatermarkChange,
 }: StickerPreviewProps) {
   const { ref: stickerFrameRef, size: stickerFrameSize } = useElementSize<HTMLDivElement>()
 
@@ -99,10 +118,31 @@ export function StickerPreview({
   const layout = computeStickerLayout({
     width: stickerFrameSize.width,
     height: stickerFrameSize.height,
-    padding: STICKER_PADDING_IN * pxPerInch,
+    paddingX: paddingX * pxPerInch,
+    paddingY: paddingY * pxPerInch,
     gap: contentGap * pxPerInch,
     borderWidth: borderPx,
   })
+
+  const watermarkText = watermark.text.trim()
+  const watermarkFamily = WATERMARK_FONTS.find((f) => f.id === watermark.font)?.family ?? WATERMARK_FONTS[0].family
+  const watermarkTile = (() => {
+    if (!stickerFrameSize.height || !watermarkText) return null
+    const fontSize = Math.min(Math.max(stickerFrameSize.height * 0.14, 12), stickerFrameSize.height * 0.3)
+    const estCharWidth = 0.58
+    const textWidth = watermarkText.length * fontSize * estCharWidth
+    const tileW = textWidth + fontSize * 1.8
+    const tileH = fontSize * 2.6
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${tileW}" height="${tileH}">` +
+      `<text x="${tileW / 2}" y="${tileH / 2}" font-family="${escapeXml(watermarkFamily)}" ` +
+      `font-size="${fontSize}" font-weight="700" fill="#000000" fill-opacity="${watermark.opacity}" ` +
+      `text-anchor="middle" dominant-baseline="middle" ` +
+      `transform="rotate(${WATERMARK_ROTATION_DEG} ${tileW / 2} ${tileH / 2})">${escapeXml(watermarkText)}</text>` +
+      `</svg>`
+    const url = `data:image/svg+xml,${encodeURIComponent(svg)}`
+    return { url, tileW, tileH }
+  })()
 
   const logoLayout =
     logo && layout.logoFrame.w > 0
@@ -204,6 +244,21 @@ export function StickerPreview({
         >
           {stickerFrameSize.width > 0 && (
             <>
+              {/* Watermark — repeated in a staggered tile across the whole
+                  sticker, painted behind everything else so the opaque
+                  logo and QR images on top of it are never affected */}
+              {watermark.enabled && watermarkText && watermarkTile && (
+                <div
+                  className="absolute inset-0 pointer-events-none z-0"
+                  style={{
+                    backgroundImage: `url("${watermarkTile.url}"), url("${watermarkTile.url}")`,
+                    backgroundRepeat: "repeat, repeat",
+                    backgroundSize: `${watermarkTile.tileW}px ${watermarkTile.tileH}px, ${watermarkTile.tileW}px ${watermarkTile.tileH}px`,
+                    backgroundPosition: `0 0, ${watermarkTile.tileW / 2}px ${watermarkTile.tileH / 2}px`,
+                  }}
+                />
+              )}
+
               {/* Logo frame — draggable to pan when zoomed */}
               <div
                 onPointerDown={handleLogoPointerDown}
@@ -326,6 +381,39 @@ export function StickerPreview({
           })}
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-semibold text-foreground">Padding X</label>
+              <span className="text-xs text-muted-foreground">{paddingX.toFixed(2)}&Prime;</span>
+            </div>
+            <input
+              type="range"
+              min={MIN_PADDING_IN}
+              max={MAX_PADDING_IN}
+              step={0.01}
+              value={paddingX}
+              onChange={(e) => onPaddingXChange(parseFloat(e.target.value))}
+              className="w-full accent-primary"
+            />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-semibold text-foreground">Padding Y</label>
+              <span className="text-xs text-muted-foreground">{paddingY.toFixed(2)}&Prime;</span>
+            </div>
+            <input
+              type="range"
+              min={MIN_PADDING_IN}
+              max={MAX_PADDING_IN}
+              step={0.01}
+              value={paddingY}
+              onChange={(e) => onPaddingYChange(parseFloat(e.target.value))}
+              className="w-full accent-primary"
+            />
+          </div>
+        </div>
+
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
@@ -401,21 +489,7 @@ export function StickerPreview({
               <Square className="w-3.5 h-3.5 text-primary" />
               Border
             </label>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={border.enabled}
-              onClick={() => onBorderChange({ ...border, enabled: !border.enabled })}
-              className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${
-                border.enabled ? "bg-primary" : "bg-muted"
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                  border.enabled ? "translate-x-4" : "translate-x-0"
-                }`}
-              />
-            </button>
+            <ToggleSwitch checked={border.enabled} onChange={(enabled) => onBorderChange({ ...border, enabled })} />
           </div>
 
           {border.enabled && (
@@ -442,8 +516,92 @@ export function StickerPreview({
             </div>
           )}
         </div>
+
+        <div className="pt-2 border-t border-border">
+          <div className="flex items-center justify-between py-4">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+              <Stamp className="w-3.5 h-3.5 text-primary" />
+              Watermark
+            </label>
+            <ToggleSwitch
+              checked={watermark.enabled}
+              onChange={(enabled) => onWatermarkChange({ ...watermark, enabled })}
+            />
+          </div>
+
+          {watermark.enabled && (
+            <div className="space-y-4 pb-1">
+              <div>
+                <span className="text-xs font-semibold text-foreground mb-2 block">Watermark text</span>
+                <input
+                  type="text"
+                  value={watermark.text}
+                  maxLength={MAX_WATERMARK_TEXT_LENGTH}
+                  onChange={(e) => onWatermarkChange({ ...watermark, text: e.target.value })}
+                  placeholder="e.g. SAMPLE"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-shadow"
+                />
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-foreground mb-2 block">Font</span>
+                <div className="flex flex-wrap gap-2">
+                  {WATERMARK_FONTS.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => onWatermarkChange({ ...watermark, font: f.id })}
+                      style={{ fontFamily: f.family }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                        watermark.font === f.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-foreground">Opacity</span>
+                  <span className="text-xs text-muted-foreground">{Math.round(watermark.opacity * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={MIN_WATERMARK_OPACITY}
+                  max={MAX_WATERMARK_OPACITY}
+                  step={0.01}
+                  value={watermark.opacity}
+                  onChange={(e) => onWatermarkChange({ ...watermark, opacity: parseFloat(e.target.value) })}
+                  className="w-full accent-primary"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground/70">
+                The watermark sits behind the logo and QR code, so neither is ever obscured.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
+  )
+}
+
+function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${checked ? "bg-primary" : "bg-muted"}`}
+    >
+      <span
+        className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+          checked ? "translate-x-4" : "translate-x-0"
+        }`}
+      />
+    </button>
   )
 }
 
@@ -478,6 +636,15 @@ function ColorSwatchRow({ value, onChange }: { value: string; onChange: (color: 
       </label>
     </div>
   )
+}
+
+function escapeXml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
 }
 
 function CropMark({ className }: { className: string }) {
