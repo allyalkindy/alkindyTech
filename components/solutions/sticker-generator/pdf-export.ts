@@ -73,11 +73,17 @@ function renderWatermarkLayer(size: StickerSize, watermark: Watermark) {
   ctx.fillStyle = "#000000"
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
-  ctx.font = `bold ${fontSize}px ${fontFamily}`
 
-  const textWidth = ctx.measureText(text).width
-  const stepX = textWidth + fontSize * 1.8
-  const stepY = fontSize * 2.6
+  // Grid spacing is derived from the *base* size, not the scaled one, so
+  // the word-size slider only changes how big each repeat renders — never
+  // how many repeats fit. Only the actual fillText call below uses the
+  // user-scaled font size.
+  ctx.font = `bold ${baseFontSize}px ${fontFamily}`
+  const baseTextWidth = ctx.measureText(text).width
+  const stepX = baseTextWidth + baseFontSize * 1.8
+  const stepY = baseFontSize * 2.6
+
+  ctx.font = `bold ${fontSize}px ${fontFamily}`
 
   ctx.translate(canvasW / 2, canvasH / 2)
   ctx.rotate((WATERMARK_ROTATION_DEG * Math.PI) / 180)

@@ -133,11 +133,15 @@ export function StickerPreview({
     const baseFontSize = Math.min(Math.max(stickerFrameSize.height * 0.14, 12), stickerFrameSize.height * 0.3)
     const fontSize = Math.min(Math.max(baseFontSize * watermark.scale, 8), stickerFrameSize.height * 0.6)
     const estCharWidth = 0.58
-    const textWidth = watermarkText.length * fontSize * estCharWidth
-    const tileW = textWidth + fontSize * 1.8
-    const tileH = fontSize * 2.6
+    // Tile size (and therefore how many repeats fit) is derived from the
+    // *base* font size, not the scaled one — the word-size slider only
+    // changes how big each repeat renders inside its fixed slot, never how
+    // many slots there are.
+    const baseTextWidth = watermarkText.length * baseFontSize * estCharWidth
+    const tileW = baseTextWidth + baseFontSize * 1.8
+    const tileH = baseFontSize * 2.6
     const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${tileW}" height="${tileH}">` +
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${tileW}" height="${tileH}" overflow="visible">` +
       `<text x="${tileW / 2}" y="${tileH / 2}" font-family="${escapeXml(watermarkFamily)}" ` +
       `font-size="${fontSize}" font-weight="700" fill="#000000" fill-opacity="${watermark.opacity}" ` +
       `text-anchor="middle" dominant-baseline="middle" ` +
