@@ -27,6 +27,7 @@
     --input: 32 18% 83%;
     --ring: 18 68% 45%;
     --radius: 0.85rem;
+    --shadow-professional: 0 4px 20px rgba(30, 20, 10, 0.08);
   }
 
   .dark {
@@ -51,6 +52,7 @@
     --border: 30 12% 20%;
     --input: 30 12% 20%;
     --ring: 22 78% 58%;
+    --shadow-professional: 0 4px 24px rgba(0, 0, 0, 0.45);
   }
 }
 
@@ -157,9 +159,5 @@ html {
 
 /* Soft elevated shadow used on cards outside the shadcn card system */
 .shadow-professional {
-  box-shadow: 0 4px 20px rgba(30, 20, 10, 0.08);
-}
-
-.dark .shadow-professional {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-professional);
 }
