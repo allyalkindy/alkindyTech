@@ -29,6 +29,7 @@ export interface Watermark {
   text: string
   font: WatermarkFontId
   opacity: number
+  scale: number
 }
 
 export type ResizeHandle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w"
@@ -82,11 +83,13 @@ export const WATERMARK_FONTS: { id: WatermarkFontId; label: string; family: stri
   { id: "script", label: "Script", family: "'Brush Script MT', 'Segoe Script', cursive" },
   { id: "mono", label: "Mono", family: "'Courier New', monospace" },
 ]
-export const DEFAULT_WATERMARK: Watermark = { enabled: false, text: "SAMPLE", font: "sans", opacity: 0.15 }
+export const DEFAULT_WATERMARK: Watermark = { enabled: false, text: "SAMPLE", font: "sans", opacity: 0.15, scale: 1 }
 export const MIN_WATERMARK_OPACITY = 0.05
 export const MAX_WATERMARK_OPACITY = 0.5
 export const MAX_WATERMARK_TEXT_LENGTH = 24
 export const WATERMARK_ROTATION_DEG = -28
+export const MIN_WATERMARK_SCALE = 0.5
+export const MAX_WATERMARK_SCALE = 2.5
 
 // Minimum room, in inches, a logo/QR frame must keep on each side —
 // guards content geometry against gap/border values that would otherwise

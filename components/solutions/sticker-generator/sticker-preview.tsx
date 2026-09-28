@@ -12,6 +12,7 @@ import {
   MAX_QR_SCALE,
   MAX_STICKER_WIDTH,
   MAX_WATERMARK_OPACITY,
+  MAX_WATERMARK_SCALE,
   MAX_WATERMARK_TEXT_LENGTH,
   MIN_BORDER_WIDTH_IN,
   MIN_CONTENT_GAP_IN,
@@ -20,6 +21,7 @@ import {
   MIN_STICKER_HEIGHT,
   MIN_STICKER_WIDTH,
   MIN_WATERMARK_OPACITY,
+  MIN_WATERMARK_SCALE,
   MIN_WIDTH_HEIGHT_GAP,
   MAX_STICKER_HEIGHT,
   MIN_PADDING_IN,
@@ -128,7 +130,8 @@ export function StickerPreview({
   const watermarkFamily = WATERMARK_FONTS.find((f) => f.id === watermark.font)?.family ?? WATERMARK_FONTS[0].family
   const watermarkTile = (() => {
     if (!stickerFrameSize.height || !watermarkText) return null
-    const fontSize = Math.min(Math.max(stickerFrameSize.height * 0.14, 12), stickerFrameSize.height * 0.3)
+    const baseFontSize = Math.min(Math.max(stickerFrameSize.height * 0.14, 12), stickerFrameSize.height * 0.3)
+    const fontSize = Math.min(Math.max(baseFontSize * watermark.scale, 8), stickerFrameSize.height * 0.6)
     const estCharWidth = 0.58
     const textWidth = watermarkText.length * fontSize * estCharWidth
     const tileW = textWidth + fontSize * 1.8
@@ -560,6 +563,21 @@ export function StickerPreview({
                     </button>
                   ))}
                 </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-foreground">Word size</span>
+                  <span className="text-xs text-muted-foreground">{Math.round(watermark.scale * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={MIN_WATERMARK_SCALE}
+                  max={MAX_WATERMARK_SCALE}
+                  step={0.05}
+                  value={watermark.scale}
+                  onChange={(e) => onWatermarkChange({ ...watermark, scale: parseFloat(e.target.value) })}
+                  className="w-full accent-primary"
+                />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">

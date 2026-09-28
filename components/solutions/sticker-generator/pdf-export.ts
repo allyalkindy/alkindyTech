@@ -65,7 +65,8 @@ function renderWatermarkLayer(size: StickerSize, watermark: Watermark) {
   if (!ctx) return null
 
   const fontFamily = WATERMARK_FONTS.find((f) => f.id === watermark.font)?.family ?? WATERMARK_FONTS[0].family
-  const fontSize = Math.min(Math.max(canvasH * 0.14, 18), canvasH * 0.3)
+  const baseFontSize = Math.min(Math.max(canvasH * 0.14, 18), canvasH * 0.3)
+  const fontSize = Math.min(Math.max(baseFontSize * watermark.scale, 8), canvasH * 0.6)
 
   ctx.save()
   ctx.globalAlpha = watermark.opacity
