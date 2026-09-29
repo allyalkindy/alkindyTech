@@ -1,4 +1,4 @@
-import { QrCode, type LucideIcon } from "lucide-react";
+import { QrCode, AudioLines, Clapperboard, type LucideIcon } from "lucide-react";
 
 export interface Solution {
   slug: string;
@@ -20,5 +20,25 @@ export const solutions: Solution[] = [
     icon: QrCode,
     status: "live",
     href: "/solutions/sticker-generator",
+  },
+  {
+    slug: "audio-compressor",
+    title: "Audio Compressor",
+    tagline: "Smaller files, same sound",
+    description:
+      "Upload an audio file and compress it with the real LAME MP3 encoder — pick your quality, hear the before and after yourself, then download.",
+    icon: AudioLines,
+    status: "live",
+    href: "/solutions/audio-compressor",
+  },
+  {
+    slug: "mp3-to-mp4",
+    title: "MP3 to MP4",
+    tagline: "Audio + image, one video",
+    description:
+      "Upload an audio file and a background image and get a real MP4 video — proper H.264/AAC, encoded entirely in your browser. Perfect for YouTube, podcasts, and Reels.",
+    icon: Clapperboard,
+    status: "live",
+    href: "/solutions/mp3-to-mp4",
   },
 ];
