@@ -2,6 +2,12 @@ import { NextResponse } from "next/server"
 import { getCachedStream, reResolveById } from "@/lib/services/ytdlp"
 
 export const runtime = "nodejs"
+// A cache miss means re-running yt-dlp before the first byte can be
+// proxied, and a request for the whole file (no Range header) keeps this
+// function alive for as long as that download takes — both can occasionally
+// run long. Free/Hobby plans cap this lower than what's requested here
+// regardless.
+export const maxDuration = 60
 
 // A video id is always exactly 11 URL-safe characters — used to reject
 // junk before it ever reaches Redis or yt-dlp.

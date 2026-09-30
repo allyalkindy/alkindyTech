@@ -2,17 +2,29 @@
 //   1) metadata to show the user (title, thumbnail, duration)
 //   2) a direct, temporary CDN URL for the best audio-only track
 //
-// yt-dlp itself must be installed on the machine running this server
-// (e.g. `pip install yt-dlp` or the standalone binary) — it is not an npm
-// package, so there is nothing to add to package.json for it.
+// We run a copy of yt-dlp's self-contained Linux binary committed at
+// bin/yt-dlp_linux (bundles its own Python, so the server doesn't need one
+// installed) rather than relying on a system install — this is what makes
+// it work on Vercel, whose serverless functions don't have yt-dlp or even
+// Python preinstalled. See next.config.js's outputFileTracingIncludes for
+// why the binary actually ships with the deployed function.
 
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
+import path from "node:path"
+import os from "node:os"
 import { after } from "next/server"
 import { redis } from "./redisRateLimiter"
 import { toCanonicalYouTubeUrl } from "@/lib/youtubeUtils/utils"
 
 const execFileAsync = promisify(execFile)
+
+const YT_DLP_PATH = path.join(process.cwd(), "bin", "yt-dlp_linux")
+
+// Vercel's serverless functions have a read-only filesystem except /tmp —
+// yt-dlp normally caches small extractor/signature data under the user's
+// home/cache dir, which would otherwise fail to write in production.
+const YT_DLP_CACHE_DIR = path.join(os.tmpdir(), "yt-dlp-cache")
 
 export interface ResolvedStream {
   id: string
@@ -47,11 +59,12 @@ async function runYtDlp(youtubeUrl: string): Promise<any> {
   // shell string, so the user-supplied URL can never break out into shell
   // syntax — this is what keeps this safe from command injection.
   const { stdout } = await execFileAsync(
-    "yt-dlp",
+    YT_DLP_PATH,
     [
       "--dump-json",
       "--no-playlist",
       "--no-warnings",
+      "--cache-dir", YT_DLP_CACHE_DIR,
       // The audio-only formats we pick (e.g. itag 140) already come from
       // the initial player response — yt-dlp only fetches the separate HLS
       // manifest to list additional formats we'd never choose anyway. This
@@ -63,7 +76,13 @@ async function runYtDlp(youtubeUrl: string): Promise<any> {
       "-f", "bestaudio[ext=m4a]/bestaudio",
       youtubeUrl,
     ],
-    { timeout: 20_000, maxBuffer: 10 * 1024 * 1024 },
+    {
+      timeout: 20_000,
+      maxBuffer: 10 * 1024 * 1024,
+      // Belt-and-suspenders alongside --cache-dir: redirect $HOME too, in
+      // case anything underneath yt-dlp ever falls back to it for writes.
+      env: { ...process.env, HOME: os.tmpdir() },
+    },
   )
   return JSON.parse(stdout)
 }
