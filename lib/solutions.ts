@@ -1,4 +1,4 @@
-import { QrCode, AudioLines, Clapperboard, type LucideIcon } from "lucide-react";
+import { QrCode, AudioLines, Clapperboard, Youtube, type LucideIcon } from "lucide-react";
 
 export interface Solution {
   slug: string;
@@ -40,5 +40,15 @@ export const solutions: Solution[] = [
     icon: Clapperboard,
     status: "live",
     href: "/solutions/mp3-to-mp4",
+  },
+  {
+    slug: "youtube-listener",
+    title: "YouTube Listener",
+    tagline: "Paste a link, lock your phone, keep listening",
+    description:
+      "Paste a YouTube link and listen to the audio with real lock-screen controls — play, pause, and seek from your phone's lock screen. Audio streams progressively, nothing is downloaded in full.",
+    icon: Youtube,
+    status: "live",
+    href: "/solutions/youtube-listener",
   },
 ];

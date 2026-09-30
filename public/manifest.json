@@ -1,0 +1,14 @@
+{
+  "name": "YouTube Listener — alkindyTech",
+  "short_name": "YT Listener",
+  "description": "Paste a YouTube link and keep listening — lock your phone, playback keeps going.",
+  "start_url": "/solutions/youtube-listener",
+  "scope": "/solutions/youtube-listener",
+  "display": "standalone",
+  "background_color": "#F6F2EA",
+  "theme_color": "#C15425",
+  "icons": [
+    { "src": "/assets/alkindy.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/alkindy.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
