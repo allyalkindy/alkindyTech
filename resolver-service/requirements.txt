@@ -1,0 +1,5 @@
+flask==3.1.3
+waitress==3.0.2
+# Deliberately unpinned: yt-dlp updates frequently to counter YouTube's own
+# changes, and each deploy rebuilds this image fresh, so we want latest.
+yt-dlp

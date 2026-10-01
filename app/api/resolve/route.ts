@@ -3,13 +3,11 @@ import { ratelimit } from "@/lib/services/redisRateLimiter"
 import { isValidYouTubeUrl } from "@/lib/youtubeUtils/utils"
 import { resolveYouTubeAudio } from "@/lib/services/ytdlp"
 
-// yt-dlp is a real CLI process, not something the Edge runtime can spawn —
-// this route needs the full Node.js runtime.
 export const runtime = "nodejs"
-// Resolving (running yt-dlp, possibly re-trying) can occasionally take
-// longer than the platform's default function timeout — this asks Vercel
-// for more headroom. Free/Hobby plans cap this lower than what's requested
-// here regardless, so a very slow resolve can still be cut off.
+// resolveYouTubeAudio() calls out to the resolver-service over HTTPS (see
+// lib/services/ytdlp.ts) rather than running yt-dlp here — that call can
+// occasionally take a while, so this asks Vercel for more headroom.
+// Free/Hobby plans cap this lower than what's requested here regardless.
 export const maxDuration = 60
 
 export async function POST(req: Request) {

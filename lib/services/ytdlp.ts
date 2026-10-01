@@ -1,30 +1,22 @@
-// Wraps the yt-dlp command-line tool to turn a YouTube URL into:
+// Turns a YouTube URL into:
 //   1) metadata to show the user (title, thumbnail, duration)
 //   2) a direct, temporary CDN URL for the best audio-only track
 //
-// We run a copy of yt-dlp's self-contained Linux binary committed at
-// bin/yt-dlp_linux (bundles its own Python, so the server doesn't need one
-// installed) rather than relying on a system install — this is what makes
-// it work on Vercel, whose serverless functions don't have yt-dlp or even
-// Python preinstalled. See next.config.js's outputFileTracingIncludes for
-// why the binary actually ships with the deployed function.
+// The actual yt-dlp process does NOT run here. It runs on a small, separate,
+// persistently-hosted service (see resolver-service/) reached over HTTPS —
+// Vercel's serverless functions share an IP pool with thousands of unrelated
+// tenants, which YouTube's anti-bot system treats with a lot of suspicion
+// ("Sign in to confirm you're not a bot"); a small dedicated host doesn't
+// share that reputation. This file is just a thin authenticated HTTP client
+// for that service — everything downstream (Redis caching, the Range-based
+// audio proxy in /api/stream) is unchanged and still lives on Vercel.
 
-import { execFile } from "node:child_process"
-import { promisify } from "node:util"
-import path from "node:path"
-import os from "node:os"
 import { after } from "next/server"
 import { redis } from "./redisRateLimiter"
 import { toCanonicalYouTubeUrl } from "@/lib/youtubeUtils/utils"
 
-const execFileAsync = promisify(execFile)
-
-const YT_DLP_PATH = path.join(process.cwd(), "bin", "yt-dlp_linux")
-
-// Vercel's serverless functions have a read-only filesystem except /tmp —
-// yt-dlp normally caches small extractor/signature data under the user's
-// home/cache dir, which would otherwise fail to write in production.
-const YT_DLP_CACHE_DIR = path.join(os.tmpdir(), "yt-dlp-cache")
+const RESOLVER_URL = process.env.RESOLVER_URL
+const RESOLVER_SECRET = process.env.RESOLVER_SECRET
 
 export interface ResolvedStream {
   id: string
@@ -55,36 +47,27 @@ function readExpiry(directUrl: string): number {
 }
 
 async function runYtDlp(youtubeUrl: string): Promise<any> {
-  // execFile (not exec) passes arguments as an array rather than building a
-  // shell string, so the user-supplied URL can never break out into shell
-  // syntax — this is what keeps this safe from command injection.
-  const { stdout } = await execFileAsync(
-    YT_DLP_PATH,
-    [
-      "--dump-json",
-      "--no-playlist",
-      "--no-warnings",
-      "--cache-dir", YT_DLP_CACHE_DIR,
-      // The audio-only formats we pick (e.g. itag 140) already come from
-      // the initial player response — yt-dlp only fetches the separate HLS
-      // manifest to list additional formats we'd never choose anyway. This
-      // one flag roughly halves resolve time (skips a whole network
-      // round-trip) with no effect on the format we end up using.
-      "--extractor-args", "youtube:skip=hls",
-      // Prefer m4a (AAC): it plays natively on every major browser and on
-      // iOS Safari, unlike webm/opus which Safari doesn't support.
-      "-f", "bestaudio[ext=m4a]/bestaudio",
-      youtubeUrl,
-    ],
-    {
-      timeout: 20_000,
-      maxBuffer: 10 * 1024 * 1024,
-      // Belt-and-suspenders alongside --cache-dir: redirect $HOME too, in
-      // case anything underneath yt-dlp ever falls back to it for writes.
-      env: { ...process.env, HOME: os.tmpdir() },
+  if (!RESOLVER_URL || !RESOLVER_SECRET) {
+    throw new Error("RESOLVER_URL / RESOLVER_SECRET are not configured")
+  }
+
+  const res = await fetch(RESOLVER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESOLVER_SECRET}`,
     },
-  )
-  return JSON.parse(stdout)
+    body: JSON.stringify({ url: youtubeUrl }),
+    // The resolver service has its own internal yt-dlp timeout; this is
+    // just a backstop against the request itself hanging indefinitely.
+    signal: AbortSignal.timeout(25_000),
+  })
+
+  const data = await res.json()
+  if (!res.ok) {
+    throw new Error(data?.error || `Resolver service returned ${res.status}`)
+  }
+  return data
 }
 
 // Resolves a YouTube URL to a playable audio stream, and caches the result
