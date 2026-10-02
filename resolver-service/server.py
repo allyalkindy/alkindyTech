@@ -77,49 +77,9 @@ def resolve():
     if not url or not isinstance(url, str) or not is_valid_youtube_url(url):
         return jsonify({"error": "A valid YouTube URL is required"}), 400
 
-    cmd = [
-        "yt-dlp",
-        "--dump-json",
-        "--no-playlist",
-        "--no-warnings",
-        # skip=hls: the audio-only format we pick already comes from the
-        # initial player response, so fetching the separate HLS manifest is
-        # wasted work. player_client=-tv_downgraded: as of ~Aug 2026,
-        # yt-dlp's default "tv_downgraded" client started getting rejected
-        # by YouTube with "The page needs to be reloaded" (an active,
-        # unresolved upstream issue — github.com/yt-dlp/yt-dlp/issues/17389).
-        # Excluding just that one client from the default set (not
-        # replacing the whole list) avoids the error while keeping
-        # audio-only formats available; replacing the list entirely
-        # (e.g. web_safari+web_embedded only) loses audio-only access.
-        "--extractor-args", "youtube:skip=hls;player_client=-tv_downgraded",
-        # m4a (AAC) plays natively on every major browser, including iOS
-        # Safari, unlike webm/opus.
-        "-f", "bestaudio[ext=m4a]/bestaudio",
-    ]
-    cookies_path = _cookies_path()
-    if cookies_path:
-        cmd += ["--cookies", cookies_path]
-    cmd.append(url)
-
-    try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=25,
-        )
-    except subprocess.TimeoutExpired:
-        return jsonify({"error": "yt-dlp timed out"}), 504
-
-    if result.returncode != 0:
-        message = result.stderr.strip() or "yt-dlp failed"
-        return jsonify({"error": message}), 502
-
-    try:
-        info = json.loads(result.stdout)
-    except json.JSONDecodeError:
-        return jsonify({"error": "yt-dlp returned unexpected output"}), 502
+    info, error = _resolve_with_fallback(url)
+    if info is None:
+        return jsonify({"error": error or "yt-dlp failed"}), 502
 
     return jsonify(
         {
@@ -131,6 +91,74 @@ def resolve():
             "ext": info.get("ext"),
         }
     )
+
+
+# Which YouTube "client" yt-dlp impersonates affects both (a) whether a
+# request gets flagged by bot-detection and (b) whether audio-only formats
+# are even offered — and which combination currently works shifts over time
+# as YouTube and yt-dlp go back and forth (see
+# github.com/yt-dlp/yt-dlp/issues/17389 for one concrete, ongoing example:
+# the default "tv_downgraded" client started getting rejected with "The
+# page needs to be reloaded"). Rather than hardcode one combination that
+# will inevitably go stale again, we try a short list in order and use
+# whichever one actually returns a usable format for this specific request.
+CLIENT_STRATEGIES = [
+    "player_client=-tv_downgraded",  # default set minus the currently-broken client
+    "",  # yt-dlp's own unmodified default
+    "player_client=tv_simply",
+    "player_client=web_safari,web_embedded",
+]
+
+
+def _resolve_with_fallback(url):
+    cookies_path = _cookies_path()
+    last_error = None
+
+    for strategy in CLIENT_STRATEGIES:
+        extractor_args = "youtube:skip=hls"
+        if strategy:
+            extractor_args += ";" + strategy
+
+        cmd = [
+            "yt-dlp",
+            "--dump-json",
+            "--no-playlist",
+            "--no-warnings",
+            "--extractor-args", extractor_args,
+            # m4a (AAC) plays natively on every major browser, including
+            # iOS Safari, unlike webm/opus.
+            "-f", "bestaudio[ext=m4a]/bestaudio",
+        ]
+        if cookies_path:
+            cmd += ["--cookies", cookies_path]
+        cmd.append(url)
+
+        try:
+            # Short per-attempt timeout since we may make several attempts —
+            # a real success normally takes a few seconds, not this long.
+            # Kept tight (4 strategies x 10s = 40s worst case) so the whole
+            # chain stays comfortably under Vercel's function time limit.
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        except subprocess.TimeoutExpired:
+            last_error = f"yt-dlp timed out (player_client={strategy or 'default'})"
+            continue
+
+        if result.returncode != 0:
+            last_error = result.stderr.strip() or "yt-dlp failed"
+            continue
+
+        try:
+            info = json.loads(result.stdout)
+        except json.JSONDecodeError:
+            last_error = "yt-dlp returned unexpected output"
+            continue
+
+        if info.get("url"):
+            return info, None
+
+        last_error = "yt-dlp returned no usable format"
+
+    return None, last_error
 
 
 if __name__ == "__main__":

@@ -58,9 +58,12 @@ async function runYtDlp(youtubeUrl: string): Promise<any> {
       Authorization: `Bearer ${RESOLVER_SECRET}`,
     },
     body: JSON.stringify({ url: youtubeUrl }),
-    // The resolver service has its own internal yt-dlp timeout; this is
-    // just a backstop against the request itself hanging indefinitely.
-    signal: AbortSignal.timeout(25_000),
+    // The resolver service tries several yt-dlp client strategies in
+    // sequence on a cache miss (worst case ~4 attempts x 10s each — see
+    // resolver-service/server.py's CLIENT_STRATEGIES) before giving up, so
+    // this needs enough headroom to not cut that off early. This is a
+    // backstop against the request hanging entirely, not the normal case.
+    signal: AbortSignal.timeout(45_000),
   })
 
   const data = await res.json()
