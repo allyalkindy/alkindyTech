@@ -77,9 +77,15 @@ def resolve():
     if not url or not isinstance(url, str) or not is_valid_youtube_url(url):
         return jsonify({"error": "A valid YouTube URL is required"}), 400
 
-    info, error = _resolve_with_fallback(url)
+    info, attempts = _resolve_with_fallback(url)
     if info is None:
-        return jsonify({"error": error or "yt-dlp failed"}), 502
+        # Temporary: surfacing all per-strategy errors (not just the last
+        # one) directly in the response while this is still being tuned,
+        # since this is the fastest way to see what's actually happening
+        # without needing Render's dashboard. This endpoint is already
+        # behind RESOLVER_SECRET, so it's not exposing anything to the
+        # public — just more than we'd normally want a client to see.
+        return jsonify({"error": "All client strategies failed", "attempts": attempts}), 502
 
     return jsonify(
         {
@@ -112,9 +118,10 @@ CLIENT_STRATEGIES = [
 
 def _resolve_with_fallback(url):
     cookies_path = _cookies_path()
-    last_error = None
+    attempts = []
 
     for strategy in CLIENT_STRATEGIES:
+        label = strategy or "default"
         extractor_args = "youtube:skip=hls"
         if strategy:
             extractor_args += ";" + strategy
@@ -140,25 +147,33 @@ def _resolve_with_fallback(url):
             # chain stays comfortably under Vercel's function time limit.
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
         except subprocess.TimeoutExpired:
-            last_error = f"yt-dlp timed out (player_client={strategy or 'default'})"
+            error = "yt-dlp timed out"
+            attempts.append({"strategy": label, "error": error})
+            print(f"[resolve] strategy={label} timed out", flush=True)
             continue
 
         if result.returncode != 0:
-            last_error = result.stderr.strip() or "yt-dlp failed"
+            error = result.stderr.strip() or "yt-dlp failed"
+            attempts.append({"strategy": label, "error": error})
+            print(f"[resolve] strategy={label} failed: {error}", flush=True)
             continue
 
         try:
             info = json.loads(result.stdout)
         except json.JSONDecodeError:
-            last_error = "yt-dlp returned unexpected output"
+            error = "yt-dlp returned unexpected output"
+            attempts.append({"strategy": label, "error": error})
+            print(f"[resolve] strategy={label} failed: {error}", flush=True)
             continue
 
         if info.get("url"):
+            print(f"[resolve] strategy={label} succeeded", flush=True)
             return info, None
 
-        last_error = "yt-dlp returned no usable format"
+        attempts.append({"strategy": label, "error": "no usable format in response"})
+        print(f"[resolve] strategy={label}: no usable format in response", flush=True)
 
-    return None, last_error
+    return None, attempts
 
 
 if __name__ == "__main__":
