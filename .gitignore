@@ -41,3 +41,8 @@ yarn-error.log*
 # next-env.d.ts  <-- REMOVED FROM IGNORE
 
 venv/
+
+# python (resolver-service)
+__pycache__/
+*.pyc
+.venv/

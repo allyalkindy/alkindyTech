@@ -82,10 +82,17 @@ def resolve():
         "--dump-json",
         "--no-playlist",
         "--no-warnings",
-        # Same optimization as the original Vercel implementation: the
-        # audio-only format we pick already comes from the initial player
-        # response, so fetching the separate HLS manifest is wasted work.
-        "--extractor-args", "youtube:skip=hls",
+        # skip=hls: the audio-only format we pick already comes from the
+        # initial player response, so fetching the separate HLS manifest is
+        # wasted work. player_client=-tv_downgraded: as of ~Aug 2026,
+        # yt-dlp's default "tv_downgraded" client started getting rejected
+        # by YouTube with "The page needs to be reloaded" (an active,
+        # unresolved upstream issue — github.com/yt-dlp/yt-dlp/issues/17389).
+        # Excluding just that one client from the default set (not
+        # replacing the whole list) avoids the error while keeping
+        # audio-only formats available; replacing the list entirely
+        # (e.g. web_safari+web_embedded only) loses audio-only access.
+        "--extractor-args", "youtube:skip=hls;player_client=-tv_downgraded",
         # m4a (AAC) plays natively on every major browser, including iOS
         # Safari, unlike webm/opus.
         "-f", "bestaudio[ext=m4a]/bestaudio",
