@@ -16,9 +16,13 @@ export const ASPECT_RATIOS: AspectRatioOption[] = [
 
 export const DEFAULT_ASPECT_RATIO: AspectRatioId = "landscape"
 
-export const MAX_AUDIO_BYTES = 100 * 1024 * 1024 // 100MB
+// 350MB comfortably covers 2 hours of audio even at a high 320kbps
+// compressed bitrate (~281MB) with headroom — uncompressed WAV at 2 hours
+// (~1.2GB) is deliberately still rejected, since a file that large risks
+// exhausting browser memory regardless of how fast the encode itself is.
+export const MAX_AUDIO_BYTES = 350 * 1024 * 1024 // 350MB
 export const MAX_IMAGE_BYTES = 20 * 1024 * 1024 // 20MB
-export const MAX_DURATION_SECONDS = 30 * 60 // 30 minutes
+export const MAX_DURATION_SECONDS = 2 * 60 * 60 // 2 hours
 
 // The video content never moves — it's one static image — so there is
 // nothing for extra frames to capture. 1fps is the standard rate for this

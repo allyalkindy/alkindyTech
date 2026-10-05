@@ -51,6 +51,13 @@ function extFromFile(file: File, fallback: string) {
   return match ? match[1].toLowerCase() : fallback
 }
 
+function formatEta(ms: number): string {
+  const totalSeconds = Math.round(ms / 1000)
+  if (totalSeconds < 60) return `~${Math.max(1, totalSeconds)}s left`
+  const minutes = Math.round(totalSeconds / 60)
+  return `~${minutes} min left`
+}
+
 export function Mp3ToMp4() {
   const [audio, setAudio] = useState<AudioInfo | null>(null)
   const [image, setImage] = useState<ImageInfo | null>(null)
@@ -62,6 +69,7 @@ export function Mp3ToMp4() {
   const [engineLoadProgress, setEngineLoadProgress] = useState(0)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generateProgress, setGenerateProgress] = useState(0)
+  const [generateEtaMs, setGenerateEtaMs] = useState<number | null>(null)
   const [result, setResult] = useState<VideoResult | null>(null)
 
   const audioInputRef = useRef<HTMLInputElement>(null)
@@ -71,6 +79,7 @@ export function Mp3ToMp4() {
   const ffmpegLoadPromiseRef = useRef<Promise<import("@ffmpeg/ffmpeg").FFmpeg> | null>(null)
   const hasPrewarmedRef = useRef(false)
   const objectUrlsRef = useRef<Set<string>>(new Set())
+  const generateStartRef = useRef(0)
 
   useEffect(() => {
     return () => {
@@ -117,8 +126,10 @@ export function Mp3ToMp4() {
       const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0))
 
       if (buffer.duration > MAX_DURATION_SECONDS) {
+        const maxMinutes = Math.round(MAX_DURATION_SECONDS / 60)
+        const limitLabel = maxMinutes % 60 === 0 ? `${maxMinutes / 60} hours` : `${maxMinutes} minutes`
         toast.error("That audio is too long", {
-          description: `Keep it under ${Math.round(MAX_DURATION_SECONDS / 60)} minutes.`,
+          description: `Keep it under ${limitLabel}.`,
         })
         return
       }
@@ -219,6 +230,7 @@ export function Mp3ToMp4() {
     if (!audio || !image) return
     setIsGenerating(true)
     setGenerateProgress(0)
+    setGenerateEtaMs(null)
     revokeUrl(result?.url)
     setResult(null)
 
@@ -226,8 +238,17 @@ export function Mp3ToMp4() {
       const { fetchFile } = await import("@ffmpeg/util")
       const ffmpeg = await ensureFFmpeg()
 
+      generateStartRef.current = performance.now()
       const onProgress = ({ progress }: { progress: number }) => {
-        setGenerateProgress(Math.min(1, Math.max(0, progress)))
+        const clamped = Math.min(1, Math.max(0, progress))
+        setGenerateProgress(clamped)
+        // Only trust the estimate once there's enough signal — a 1-2%
+        // reading this early tends to wildly overshoot the real total.
+        if (clamped > 0.03) {
+          const elapsed = performance.now() - generateStartRef.current
+          const estimatedTotal = elapsed / clamped
+          setGenerateEtaMs(Math.max(0, estimatedTotal - elapsed))
+        }
       }
       ffmpeg.on("progress", onProgress)
 
@@ -297,8 +318,22 @@ export function Mp3ToMp4() {
     } finally {
       setIsGenerating(false)
       setGenerateProgress(0)
+      setGenerateEtaMs(null)
     }
   }
+
+  // Long audio can now take several minutes to encode — warn before an
+  // accidental refresh/close throws that work away, same as any other
+  // long-running browser task.
+  useEffect(() => {
+    if (!isGenerating) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [isGenerating])
 
   const handleDownload = () => {
     if (!result || !audio) return
@@ -387,7 +422,8 @@ export function Mp3ToMp4() {
                 {isDecoding ? "Reading your audio…" : "Drag & drop your audio file"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                or click to browse · MP3, WAV, M4A, OGG, FLAC up to {formatBytes(MAX_AUDIO_BYTES)}
+                or click to browse · MP3, WAV, M4A, OGG, FLAC · up to {formatBytes(MAX_AUDIO_BYTES)},{" "}
+                {Math.round(MAX_DURATION_SECONDS / 3600)} hours
               </p>
             </div>
           </div>
@@ -530,14 +566,19 @@ export function Mp3ToMp4() {
         </button>
 
         {isGenerating && (
-          <div className="mt-4 h-1.5 rounded-full bg-muted overflow-hidden max-w-xs">
-            <div
-              className="h-full bg-primary transition-all duration-150"
-              style={{
-                width: `${Math.max(4, (engineState === "ready" ? generateProgress : engineLoadProgress) * 100)}%`,
-              }}
-            />
-          </div>
+          <>
+            <div className="mt-4 h-1.5 rounded-full bg-muted overflow-hidden max-w-xs">
+              <div
+                className="h-full bg-primary transition-all duration-150"
+                style={{
+                  width: `${Math.max(4, (engineState === "ready" ? generateProgress : engineLoadProgress) * 100)}%`,
+                }}
+              />
+            </div>
+            {engineState === "ready" && generateEtaMs !== null && (
+              <p className="text-xs text-muted-foreground mt-2">{formatEta(generateEtaMs)}</p>
+            )}
+          </>
         )}
 
         {!isGenerating && engineState === "loading" && (
