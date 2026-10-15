@@ -1,4 +1,4 @@
-import { QrCode, AudioLines, Clapperboard, Youtube, type LucideIcon } from "lucide-react";
+import { QrCode, AudioLines, Clapperboard, Youtube, BookOpen, type LucideIcon } from "lucide-react";
 
 export interface Solution {
   slug: string;
@@ -50,5 +50,15 @@ export const solutions: Solution[] = [
     icon: Youtube,
     status: "live",
     href: "/solutions/youtube-listener",
+  },
+  {
+    slug: "pdf-reader",
+    title: "PDF Reader",
+    tagline: "Read it like an actual book",
+    description:
+      "Upload a PDF and read it with a real page-turn animation — a two-page spread on a wide screen, one page at a time on your phone. Stays on your device; refresh and your page is still there.",
+    icon: BookOpen,
+    status: "live",
+    href: "/solutions/pdf-reader",
   },
 ];
