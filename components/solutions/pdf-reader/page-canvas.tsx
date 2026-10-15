@@ -53,11 +53,15 @@ export const PageCanvas = forwardRef<HTMLDivElement, PageCanvasProps>(
     }, [shouldRender, pdf, pageNumber, rendered])
 
     return (
-      <div
-        ref={ref}
-        className="relative w-full h-full bg-card overflow-hidden"
-        data-density="hard"
-      >
+      // No data-density here on purpose: page-flip reads this attribute per
+      // page and defaults to "soft" when absent, which is what actually
+      // lets a page bend/curl realistically while dragging. "hard" pages
+      // flip as a single rigid rotation with no curve at all — react-
+      // pageflip's showCover prop already marks the true first/last pages
+      // hard on its own (like a stiff cover), so every inner page here
+      // should stay soft to get the realistic paper bend the rest of the
+      // time.
+      <div ref={ref} className="relative w-full h-full bg-card overflow-hidden">
         <div ref={containerRef} className="absolute inset-0" />
         {!rendered && (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-card to-muted">
