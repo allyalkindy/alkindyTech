@@ -87,6 +87,17 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Scrollable but scrollbar-less — used where panning/scrolling needs to
+   stay functional (e.g. panning a zoomed PDF page) without the scrollbar
+   itself being visible chrome. */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge/IE */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
 /* Subtle paper grain — tactile, editorial texture over flat colour fields */
 .bg-grain {
   position: relative;

@@ -34,7 +34,13 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
 }
 
-export function PdfReader() {
+interface PdfReaderProps {
+  // Lets a parent (the page shell's hero/step sections) react to whether
+  // the book is actually open and being read right now.
+  onReadingChange?: (isReading: boolean) => void
+}
+
+export function PdfReader({ onReadingChange }: PdfReaderProps = {}) {
   const [status, setStatus] = useState<Status>("checking")
   const [book, setBook] = useState<BookState | null>(null)
   const [errorMessage, setErrorMessage] = useState("")
@@ -99,7 +105,8 @@ export function PdfReader() {
     await clearBook().catch(() => {})
     setBook(null)
     setStatus("empty")
-  }, [])
+    onReadingChange?.(false)
+  }, [onReadingChange])
 
   if (status === "checking") {
     return (
@@ -119,6 +126,7 @@ export function PdfReader() {
         fileName={book.fileName}
         initialPage={book.initialPage}
         onRestart={handleRestart}
+        onOpenChange={onReadingChange}
       />
     )
   }
