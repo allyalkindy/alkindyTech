@@ -59,6 +59,16 @@ export function BookReader({
   // was consistently landing a few pixels taller than what was really
   // available, which is exactly what forced a scrollbar even at 100% zoom.
   const [bookAreaSize, setBookAreaSize] = useState<{ width: number; height: number } | null>(null)
+  // react-pageflip's own notion of whether it's currently showing a single
+  // page ("portrait" — narrow/mobile) or a two-page spread ("landscape" —
+  // desktop width). Read from the library itself (onInit/onChangeOrientation)
+  // rather than guessed from a breakpoint, since it already does this exact
+  // calculation internally (accounting for minWidth, the available block
+  // width, usePortrait, etc.) — asking it directly is both simpler and
+  // always correct. Starts null (stack hidden) until the first real value
+  // arrives, so the decorative page-stack below never flashes in the wrong
+  // orientation.
+  const [orientation, setOrientation] = useState<"portrait" | "landscape" | null>(null)
   const bookRef = useRef<FlipBookHandle>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const bookAreaObserverRef = useRef<ResizeObserver | null>(null)
@@ -250,11 +260,6 @@ export function BookReader({
     return () => window.removeEventListener("keydown", onKey)
   }, [isOpened])
 
-  // A single page's box, sized from the PDF's own aspect ratio rather than
-  // assuming a fixed paper size — react-pageflip doubles this width
-  // automatically once there's room to show two pages side by side.
-  const pageHeight = Math.round(MAX_PAGE_WIDTH / aspectRatio)
-
   // react-pageflip's "stretch" sizing turned out to only strictly respect
   // maxWidth — given maxWidth and maxHeight as two independent bounds, it
   // consistently rendered ~20px taller than maxHeight whenever the
@@ -279,21 +284,33 @@ export function BookReader({
   // based guess. Before the first measurement arrives, fall back to a
   // rough estimate so there's no flash of zero-sized content.
   //
-  // This measurement-based path only applies in fullscreen, where the
-  // scroll container's height is independently driven by the viewport
-  // (flex-1/h-full). Inline mode has no such independent height — the
-  // container sizes to its own content (the book), so feeding a
-  // bookAreaSize measurement back into the book's own size creates a
-  // circular dependency: a transient small/zero measurement gets locked
-  // in via the remount key, collapsing the book to zero height. Inline
-  // mode instead keeps the original fixed-constant sizing, which never
-  // had this problem.
+  // Fullscreen fits against BOTH measured axes, because there it's
+  // fighting for a strictly bounded screen height. Inline mode has no
+  // such independent height — its scroll container sizes to its own
+  // content (the book), so feeding a measured HEIGHT back into the
+  // book's own size there creates a circular dependency: a transient
+  // small/zero measurement gets locked in via the remount key, collapsing
+  // the book to zero height. Inline mode's height instead stays purely
+  // derived from aspect ratio, never from a measured bound.
+  //
+  // Inline mode's WIDTH is a different story — the scroll container's
+  // width is independently set by layout (w-full, capped by max-w), never
+  // by its content, so there's no such circular risk there. Reading
+  // bookAreaSize.width (not .height) is what lets a wide enough desktop
+  // window show a real two-page spread here too, instead of always
+  // falling back to a single portrait page the way a fixed-width-only
+  // guess would.
   const isFullscreen = fullscreenMode !== "off"
   const fitted = isFullscreen
     ? bookAreaSize
       ? fitSinglePage(Math.floor(bookAreaSize.width) - 2, Math.floor(bookAreaSize.height) - 2)
       : fitSinglePage(1600, Math.round(1600 / aspectRatio))
-    : { width: MAX_PAGE_WIDTH, height: pageHeight }
+    : (() => {
+        const width = bookAreaSize
+          ? Math.min(MAX_PAGE_WIDTH, Math.floor(bookAreaSize.width / 2) - 4)
+          : MAX_PAGE_WIDTH
+        return { width, height: Math.round(width / aspectRatio) }
+      })()
   const effectiveMaxWidth = fitted.width
   const effectiveMaxHeight = fitted.height
 
@@ -326,6 +343,66 @@ export function BookReader({
       }),
     [pdf, pageCount, currentPage],
   )
+
+  // The faux "stack of pages" peeking out from behind the open book —
+  // desktop-only (it's only ever rendered while orientation is the
+  // two-page "landscape" spread; portrait/mobile never shows it) and
+  // purely decorative. Each side's step count scales with how many pages
+  // are actually behind/ahead, but caps out well before pageCount would —
+  // a 500-page book doesn't need 500 layered divs to read as "thick,"
+  // just visibly thicker than a 5-page one, up to a sensible maximum.
+  const pagesBehind = currentPage
+  const pagesAhead = Math.max(0, pageCount - 1 - currentPage)
+  const stackStepCount = (n: number) => (n <= 0 ? 0 : Math.min(6, Math.ceil(Math.log2(n + 1))))
+  const behindSteps = stackStepCount(pagesBehind)
+  const aheadSteps = stackStepCount(pagesAhead)
+
+  // Positioned from the wrapper's horizontal CENTER (left: 50% + a signed
+  // margin derived from effectiveMaxWidth — the book's own real half-
+  // width in landscape mode) rather than from the wrapper's edges. The
+  // wrapper can't be shrink-wrapped to the book's own size to get edge-
+  // relative positioning for free — react-pageflip's root element sets
+  // itself to `width: 100%` and needs a genuinely wide, independently-
+  // sized parent to measure against when deciding whether a two-page
+  // spread fits; a shrink-to-fit (e.g. inline-flex) parent traps it in
+  // exactly the same kind of circular dependency the bookAreaSize height
+  // fix above avoids, just on the width axis instead, and it collapses to
+  // a tiny fallback size. Center-relative math sidesteps that entirely by
+  // using the already-known, non-circular effectiveMaxWidth value instead
+  // of measuring the book's rendered box at all.
+  function renderPageStack(side: "left" | "right", steps: number) {
+    if (steps === 0) return null
+    return Array.from({ length: steps }, (_, i) => (
+      <div
+        key={`${side}-${i}`}
+        aria-hidden="true"
+        className="absolute rounded-[2px] pointer-events-none"
+        style={{
+          left: "50%",
+          marginLeft: side === "left" ? `${-effectiveMaxWidth - 5 - i * 2.5}px` : `${effectiveMaxWidth + i * 2.5}px`,
+          top: `${4 + i * 2.5}px`,
+          bottom: `${4 + i * 2.5}px`,
+          width: "5px",
+          // A faint repeating stripe stands in for individual sheet
+          // edges — the same trick a stack of paper or a book's own
+          // page-block shows when viewed from the side.
+          background:
+            "repeating-linear-gradient(to bottom, #ece4d2 0px, #ece4d2 2px, #d9cfb6 2px, #d9cfb6 3px)",
+          boxShadow:
+            side === "left"
+              ? "inset -1px 0 1px rgba(0,0,0,0.08), -2px 1px 4px rgba(30,20,10,0.12)"
+              : "inset 1px 0 1px rgba(0,0,0,0.08), 2px 1px 4px rgba(30,20,10,0.12)",
+          // Explicit negative z-index rather than relying on DOM order:
+          // react-pageflip gives its own page elements a z-index starting
+          // at startZIndex (10) for its own internal flip stacking, and
+          // this guarantees every step sits behind the book itself
+          // regardless of that internal scheme — deeper steps (further
+          // from the book) sit further back than shallower ones.
+          zIndex: -1 - i,
+        }}
+      />
+    ))
+  }
 
   return (
     <div className="w-full flex flex-col items-center scroll-mt-28">
@@ -407,7 +484,7 @@ export function BookReader({
           >
             <div
               className={`w-full shrink-0 flex flex-wrap items-center justify-between gap-3 px-1 ${
-                isFullscreen ? "max-w-[1700px]" : "max-w-4xl"
+                isFullscreen ? "max-w-[1700px]" : "max-w-[1200px]"
               }`}
             >
               <p className="text-sm font-semibold text-foreground truncate max-w-[50%]">{fileName}</p>
@@ -479,7 +556,7 @@ export function BookReader({
             <div
               ref={setBookAreaRef}
               className={`w-full overflow-auto no-scrollbar rounded-xl flex items-center justify-center ${
-                isFullscreen ? "max-w-[1700px] flex-1 min-h-0" : "max-w-4xl"
+                isFullscreen ? "max-w-[1700px] flex-1 min-h-0" : "max-w-[1200px]"
               }`}
               style={!isFullscreen ? { maxHeight: zoom > 1 ? effectiveMaxHeight + 32 : undefined } : undefined}
             >
@@ -508,50 +585,66 @@ export function BookReader({
                   width: "100%",
                 }}
               >
-              <HTMLFlipBook
-                // react-pageflip's "stretch" sizing only establishes itself
-                // once, at mount — it doesn't re-measure when maxWidth/
-                // maxHeight props change afterward (which is exactly what
-                // happens here: the real measured bookAreaSize always
-                // arrives a render or two after the first mount, so without
-                // this the book would be stuck using the rough pre-
-                // measurement fallback size forever). Keying on the target
-                // size forces a clean remount whenever it meaningfully
-                // changes, so the engine always initializes with the real,
-                // final bounds. Bucketed to whole 10px steps so it doesn't
-                // remount on every sub-pixel ResizeObserver tick, and
-                // startPage uses currentPage (not the original initialPage)
-                // so a remount resumes wherever the user actually is rather
-                // than jumping back to the start.
-                key={`${fullscreenMode}-${Math.round(effectiveMaxWidth / 10)}-${Math.round(effectiveMaxHeight / 10)}`}
-                ref={bookRef}
-                width={effectiveMaxWidth}
-                height={effectiveMaxHeight}
-                size="stretch"
-                minWidth={MIN_PAGE_WIDTH}
-                maxWidth={effectiveMaxWidth}
-                minHeight={Math.round(MIN_PAGE_WIDTH / aspectRatio)}
-                maxHeight={effectiveMaxHeight}
-                startPage={currentPage}
-                drawShadow
-                flippingTime={700}
-                usePortrait
-                startZIndex={10}
-                autoSize
-                maxShadowOpacity={0.4}
-                showCover
-                mobileScrollSupport={false}
-                swipeDistance={20}
-                clickEventForward
-                useMouseEvents
-                showPageCorners
-                disableFlipByClick={false}
-                className="pdf-flipbook"
-                style={{}}
-                onFlip={handleFlip}
-              >
-                {pages}
-              </HTMLFlipBook>
+                {/* w-full (not shrink-wrapped) and flex-centered, same as
+                    the original single-level structure — react-pageflip's
+                    own root element sets itself to width:100% and needs a
+                    genuinely wide, independently-sized parent to measure
+                    against, not one that shrinks to match it. The
+                    page-stack layers inside use center-relative math (see
+                    renderPageStack) rather than this wrapper's edges, so
+                    they still land in the right place despite it being
+                    wider than the book itself. */}
+                <div className="relative w-full flex justify-center">
+                  {orientation === "landscape" && renderPageStack("left", behindSteps)}
+                  {orientation === "landscape" && renderPageStack("right", aheadSteps)}
+                  <HTMLFlipBook
+                    // react-pageflip's "stretch" sizing only establishes
+                    // itself once, at mount — it doesn't re-measure when
+                    // maxWidth/maxHeight props change afterward (which is
+                    // exactly what happens here: the real measured
+                    // bookAreaSize always arrives a render or two after the
+                    // first mount, so without this the book would be stuck
+                    // using the rough pre-measurement fallback size
+                    // forever). Keying on the target size forces a clean
+                    // remount whenever it meaningfully changes, so the
+                    // engine always initializes with the real, final
+                    // bounds. Bucketed to whole 10px steps so it doesn't
+                    // remount on every sub-pixel ResizeObserver tick, and
+                    // startPage uses currentPage (not the original
+                    // initialPage) so a remount resumes wherever the user
+                    // actually is rather than jumping back to the start.
+                    key={`${fullscreenMode}-${Math.round(effectiveMaxWidth / 10)}-${Math.round(effectiveMaxHeight / 10)}`}
+                    ref={bookRef}
+                    width={effectiveMaxWidth}
+                    height={effectiveMaxHeight}
+                    size="stretch"
+                    minWidth={MIN_PAGE_WIDTH}
+                    maxWidth={effectiveMaxWidth}
+                    minHeight={Math.round(MIN_PAGE_WIDTH / aspectRatio)}
+                    maxHeight={effectiveMaxHeight}
+                    startPage={currentPage}
+                    drawShadow
+                    flippingTime={700}
+                    usePortrait
+                    startZIndex={10}
+                    autoSize
+                    maxShadowOpacity={0.4}
+                    showCover
+                    mobileScrollSupport={false}
+                    swipeDistance={20}
+                    clickEventForward
+                    useMouseEvents
+                    showPageCorners
+                    disableFlipByClick={false}
+                    className="pdf-flipbook"
+                    style={{}}
+                    onFlip={handleFlip}
+                    onInit={(e: { data: { mode: "portrait" | "landscape" } }) => setOrientation(e.data.mode)}
+                    onChangeOrientation={(e: { data: "portrait" | "landscape" }) => setOrientation(e.data)}
+                  >
+                    {pages}
+                  </HTMLFlipBook>
+                </div>
               </div>
             </div>
 
