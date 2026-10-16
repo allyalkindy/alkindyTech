@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import HTMLFlipBook from "react-pageflip"
 import { RotateCcw, BookOpen, ZoomIn, ZoomOut, Maximize2, Minimize2 } from "lucide-react"
@@ -172,16 +172,52 @@ export function BookReader({
   // fills exactly that gap: a touch that moved like a deliberate flick but
   // missed the library's own fast-swipe window still turns the page,
   // without needing a long drag. It only acts in that gap (>250ms) so it
-  // can never double-fire alongside the library's own instant swipe.
+  // can never double-fire alongside the library's own instant swipe. It
+  // only applies at 100% zoom — once zoomed in, a one-finger drag pans the
+  // enlarged page instead (native scrolling handles that on its own).
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
+  // Two-finger pinch-to-zoom, tracked separately from the one-finger flick
+  // above so both can share the same touch handlers without conflicting.
+  // Reuses the exact same `zoom` state (and its MIN_ZOOM/MAX_ZOOM clamp)
+  // as the +/- buttons and keyboard shortcuts, just driven continuously
+  // instead of in ZOOM_STEP increments, so it stays in sync with them.
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null)
+  const [isPinching, setIsPinching] = useState(false)
+
+  const touchDistance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX
+    const dy = touches[0].clientY - touches[1].clientY
+    return Math.hypot(dx, dy)
+  }
+
+  const endPinch = () => {
+    pinchRef.current = null
+    setIsPinching(false)
+  }
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      touchStartRef.current = null
+      pinchRef.current = { distance: touchDistance(e.touches), zoom }
+      setIsPinching(true)
+      return
+    }
     const t = e.touches[0]
-    if (!t) return
+    if (!t || zoom !== 1) return
     touchStartRef.current = { x: t.clientX, y: t.clientY, time: Date.now() }
   }
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length !== 2 || !pinchRef.current) return
+    const scale = touchDistance(e.touches) / pinchRef.current.distance
+    const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchRef.current.zoom * scale))
+    setZoom(Math.round(next * 100) / 100)
+  }
+
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2 && pinchRef.current) endPinch()
+    if (e.touches.length > 0) return
+
     const start = touchStartRef.current
     touchStartRef.current = null
     if (!start) return
@@ -262,6 +298,34 @@ export function BookReader({
   const effectiveMaxHeight = fitted.height
 
   const progress = pageCount > 1 ? currentPage / (pageCount - 1) : 0
+
+  // Memoized so this (and the PageCanvas elements inside it) stays
+  // referentially stable across renders that don't actually change which
+  // pages should be rendered — zoom changes (especially the continuous
+  // stream of them during a pinch gesture) and fullscreen toggles both
+  // re-render BookReader without touching pdf/pageCount/currentPage, and
+  // without this, every one of those renders would rebuild a fresh
+  // pageCount-length array and element list for react-pageflip to
+  // reconcile from scratch.
+  const pages = useMemo(
+    () =>
+      Array.from({ length: pageCount }, (_, i) => {
+        const pageNumber = i + 1
+        const shouldRender =
+          pageNumber >= currentPage + 1 - RENDER_WINDOW_BEHIND &&
+          pageNumber <= currentPage + 1 + RENDER_WINDOW_AHEAD
+        return (
+          <PageCanvas
+            key={pageNumber}
+            pdf={pdf}
+            pageNumber={pageNumber}
+            pageCount={pageCount}
+            shouldRender={shouldRender}
+          />
+        )
+      }),
+    [pdf, pageCount, currentPage],
+  )
 
   return (
     <div className="w-full flex flex-col items-center scroll-mt-28">
@@ -421,17 +485,26 @@ export function BookReader({
             >
               <div
                 className="shrink-0 flex justify-center drop-shadow-[0_25px_50px_rgba(30,20,10,0.25)]"
-                // The supplementary flick-to-flip handler only makes sense
-                // at 100% zoom — once zoomed in, a horizontal touch drag is
-                // what pans around the enlarged page instead (buttons still
-                // turn pages while zoomed).
-                onTouchStart={zoom === 1 ? handleTouchStart : undefined}
-                onTouchEnd={zoom === 1 ? handleTouchEnd : undefined}
+                // Flick-to-flip (one finger) only fires at 100% zoom, see
+                // handleTouchStart. Pinch-to-zoom (two fingers) works at
+                // any zoom level so a pinch can zoom back out again too.
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={() => {
+                  touchStartRef.current = null
+                  endPinch()
+                }}
                 style={{
                   touchAction: zoom > 1 ? "pan-x pan-y" : "none",
                   transform: `scale(${zoom})`,
                   transformOrigin: "top center",
-                  transition: "transform 0.2s ease",
+                  // No transition while actively pinching — a CSS easing
+                  // transition on a value already being updated every
+                  // touchmove frame just makes the zoom visibly lag behind
+                  // the fingers. Button/keyboard zoom changes (discrete,
+                  // not continuous) still get the smooth animated snap.
+                  transition: isPinching ? "none" : "transform 0.2s ease",
                   width: "100%",
                 }}
               >
@@ -477,21 +550,7 @@ export function BookReader({
                 style={{}}
                 onFlip={handleFlip}
               >
-                {Array.from({ length: pageCount }, (_, i) => {
-                  const pageNumber = i + 1
-                  const shouldRender =
-                    pageNumber >= currentPage + 1 - RENDER_WINDOW_BEHIND &&
-                    pageNumber <= currentPage + 1 + RENDER_WINDOW_AHEAD
-                  return (
-                    <PageCanvas
-                      key={pageNumber}
-                      pdf={pdf}
-                      pageNumber={pageNumber}
-                      pageCount={pageCount}
-                      shouldRender={shouldRender}
-                    />
-                  )
-                })}
+                {pages}
               </HTMLFlipBook>
               </div>
             </div>

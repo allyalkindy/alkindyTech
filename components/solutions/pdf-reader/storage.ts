@@ -15,15 +15,29 @@ export interface StoredBook {
   savedAt: number
 }
 
+// Cached rather than reopened per call: saveLastPage fires on every single
+// page turn, and indexedDB.open() redoes a connection handshake each time
+// even though it resolves async — reusing one open connection cuts that
+// latency out of the page-turn path entirely. The connection is left open
+// for the page's lifetime (IndexedDB connections are cheap to hold, and
+// the browser itself closes them on tab close).
+let dbPromise: Promise<IDBDatabase> | null = null
+
 function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore(STORE_NAME)
-    }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION)
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore(STORE_NAME)
+      }
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => {
+        dbPromise = null
+        reject(request.error)
+      }
+    })
+  }
+  return dbPromise
 }
 
 export async function saveBook(fileName: string, bytes: ArrayBuffer, lastPage = 0): Promise<void> {
@@ -37,19 +51,16 @@ export async function saveBook(fileName: string, bytes: ArrayBuffer, lastPage = 
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)
   })
-  db.close()
 }
 
 export async function loadBook(): Promise<StoredBook | null> {
   const db = await openDb()
-  const result = await new Promise<StoredBook | null>((resolve, reject) => {
+  return new Promise<StoredBook | null>((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly")
     const request = tx.objectStore(STORE_NAME).get(BOOK_KEY)
     request.onsuccess = () => resolve(request.result ?? null)
     request.onerror = () => reject(request.error)
   })
-  db.close()
-  return result
 }
 
 // Saved on every page turn so a refresh resumes where the user left off —
@@ -70,7 +81,6 @@ export async function saveLastPage(page: number): Promise<void> {
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)
   })
-  db.close()
 }
 
 export async function clearBook(): Promise<void> {
@@ -81,5 +91,4 @@ export async function clearBook(): Promise<void> {
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)
   })
-  db.close()
 }

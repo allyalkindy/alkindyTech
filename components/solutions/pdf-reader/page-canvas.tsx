@@ -6,7 +6,7 @@
 // heavy. So every page slot exists immediately, but only renders its real
 // bitmap once it's within `shouldRender`'s window around the current page
 // — everything else shows a plain placeholder until the reader gets close.
-import { forwardRef, useEffect, useRef, useState } from "react"
+import { forwardRef, memo, useEffect, useRef, useState } from "react"
 import type { PDFDocumentProxy } from "pdfjs-dist"
 import { renderPageToCanvas } from "./pdf-engine"
 
@@ -17,7 +17,7 @@ interface PageCanvasProps {
   shouldRender: boolean
 }
 
-export const PageCanvas = forwardRef<HTMLDivElement, PageCanvasProps>(
+const PageCanvasImpl = forwardRef<HTMLDivElement, PageCanvasProps>(
   ({ pdf, pageNumber, pageCount, shouldRender }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const [rendered, setRendered] = useState(false)
@@ -52,6 +52,18 @@ export const PageCanvas = forwardRef<HTMLDivElement, PageCanvasProps>(
       }
     }, [shouldRender, pdf, pageNumber, rendered])
 
+    // Once a page drifts outside the render window, free its canvas
+    // instead of leaving it mounted forever — react-pageflip keeps every
+    // page's wrapper div in the DOM for its own layout needs, but there's
+    // no reason to also keep holding onto every bitmap a long book's
+    // reader has ever scrolled past. It re-rasterizes quickly (it's just
+    // a canvas draw, not a network fetch) if the reader comes back.
+    useEffect(() => {
+      if (shouldRender || !rendered) return
+      containerRef.current?.replaceChildren()
+      setRendered(false)
+    }, [shouldRender, rendered])
+
     return (
       // No data-density here on purpose: page-flip reads this attribute per
       // page and defaults to "soft" when absent, which is what actually
@@ -75,4 +87,12 @@ export const PageCanvas = forwardRef<HTMLDivElement, PageCanvasProps>(
   },
 )
 
-PageCanvas.displayName = "PageCanvas"
+PageCanvasImpl.displayName = "PageCanvas"
+
+// Memoized because react-pageflip needs every page mounted at once — a
+// single page flip (or a zoom/fullscreen change) re-renders BookReader,
+// and without this every one of those (up to pageCount) PageCanvas
+// instances would re-render too even though only a couple actually have
+// a changed `shouldRender`. That cost scales with the book's length and,
+// once zoom tracks a live pinch gesture, with render frequency as well.
+export const PageCanvas = memo(PageCanvasImpl)
